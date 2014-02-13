@@ -43,6 +43,8 @@ import re
 import os
 import mLog
 from mMyHome import myhome
+from mAT import gsmdevice
+from mTwitterApi import twtapi
 
 
 #   V A R I A B L E S   #
@@ -58,6 +60,7 @@ MONITOR = '*99*1##'
 COMMANDS = '*99*0##'
 # Configuration file name
 CFGFILENAME = 'mhblconf.xml'
+
 
 # F U N C T I O N S #
 
@@ -275,16 +278,15 @@ def pushover_service(pomsg):
 
 def sms_service(nums,smstext):
     bOK = True
-    from mAT import atcmds
     try:
         serport = ET.parse(CFGFILENAME).find("channels/channel[@type='SMS']").attrib['serport']
         serspeed = ET.parse(CFGFILENAME).find("channels/channel[@type='SMS']").attrib['serspeed']
-        gsmdev = atcmds(serport,serspeed)
+        gsmobj = gsmdevice(serport,serspeed)
         numdest = nums.split(';')
         i = 0
         while i < len(numdest):
             if numdest[i]:
-                if not gsmdev.SendSms(numdest[i],smstext) == True:
+                if not gsmobj.send_sms(numdest[i],smstext) == True:
                     bOK = False
                 i = i + 1
             else:
@@ -308,12 +310,14 @@ def twitter_service(twtdest,twttext):
         twdest = twtdest.split(';')
         if DEBUG == 1:
             print twdest
+        # Instanziamento classe twtapi
+        twtobj = twtapi(ckey,cset,atkey,atsec)
         i = 0
         while i < len(twdest):
             if twdest[i]:
                 if DEBUG == 1:
                     print twdest[i],twttext
-                if not mTwitterApi.SendPrivateTweet(twdest[i],twttext,ckey,cset,atkey,atsec) == True:
+                if not twtobj.send_private_msg(twdest[i],twttext) == True:
                     bOK = False
                 time.sleep(2)
                 i = i + 1
