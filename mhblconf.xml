@@ -37,7 +37,7 @@
 		<alert trigger="*1*0*12##" channel="OSE" data="33987|0"/>
 		<alert trigger="*1*1*15##" channel="BUS" data="*1*1*11##|ND"/>
 		<alert trigger="*1*1*33##" channel="TWT" data="@FlavioGio78|Test invio messaggio tramite canale twitter."/>
-		<alert trigger="*1*1*26##" channel="EML" data="fla.giovannangeli@facebook.com|Test invio messaggio tramite canale facebook."/>
-		<alert trigger="*1*1*11##" channel="SMS" data="393395882183|Test invio SMS."/>
+		<alert trigger="*1*1*11##" channel="EML" data="fla.giovannangeli@facebook.com|Test invio messaggio tramite canale facebook."/>
+		<alert trigger="*1*1*26##" channel="SMS" data="393395882183|Test invio SMS."/>
 	</alerts>
 </mhbl>

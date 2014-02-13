@@ -22,13 +22,14 @@
 # e-mail:flavio.giovannangeli@gmail.com
 
 #   M O D U L E S  #
+import socket
 
 
 # S T A R T  C L A S S  M Y H O M E
 
 class myhome:
 
-    import socket
+    DEBUG = 1
 
     def __init__(self,mhgwaddr,mhgwport):
         self.mh_gwaddr = mhgwaddr
@@ -41,6 +42,8 @@ class myhome:
             self.sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sck.connect((self.mh_gwaddr,int(self.mh_gwport)))
         except Exception, e:
+            if DEBUG == 1:
+                print e
             self.sck = None
         finally:
             return self.sck

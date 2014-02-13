@@ -99,7 +99,7 @@ def main():
                 if mhobj.mh_receive_data(smon) == ACK:
                     mLog.WriteLog(flog,'bticino gateway ' + mhgateway_ip + ' connected.')
                     # OK, attivazione modalita' 'MONITOR'
-                    mhobj.mh_send_data(MONITOR)
+                    mhobj.mh_send_data(smon,MONITOR)
                     # Controllo risposta del gateway
                     if mhobj.mh_receive_data(smon) == ACK:
                         # Modalita' MONITOR attivata.
@@ -378,18 +378,26 @@ def opencmd_service(opencmd):
 
 
 def send_to_opensense(feedId,value):
-    # prepare data
-    sat = ET.parse(CFGFILENAME).find("channels/channel[@type='OSE']").attrib['api_token']
-    datalist = [{"feed_id" : feedId, "value" : value},]
-    headers = {"sense_key": sat,"content-type": "application/json"}
-    conn = httplib.HTTPConnection("api.sen.se")
-    # format a POST request with JSON content
-    conn.request("POST", "/events/", simplejson.dumps(datalist), headers)
-    response = conn.getresponse()
-    if DEBUG == 1:
-        print response.status, response.reason
-        print response.read()
-    conn.close()
+    bOK = True
+    try:
+        # Send data to Open.Sen.Se platform
+        sat = ET.parse(CFGFILENAME).find("channels/channel[@type='OSE']").attrib['api_token']
+        datalist = [{"feed_id" : feedId, "value" : value},]
+        headers = {"sense_key": sat,"content-type": "application/json"}
+        conn = httplib.HTTPConnection("api.sen.se")
+        # format a POST request with JSON content
+        conn.request("POST", "/events/", simplejson.dumps(datalist), headers)
+        response = conn.getresponse()
+        if not response.reason == 'OK':
+            bOK = False
+        if DEBUG == 1:
+            print response.status, response.reason
+            print response.read()
+    except:
+        bOK = False
+    finally:
+        conn.close()
+        return bOK
 
 
 def getConfigs(fileconfig,section,key):
