@@ -1,0 +1,4 @@
+V.1.5 - Ottobre 2013
+* Introduzione file di configurazione in formato XML;
+* Eventi/Azioni in singola riga;
+* Invio eventi a piattaforma Open.Sen.Se
