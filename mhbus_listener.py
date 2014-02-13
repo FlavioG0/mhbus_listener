@@ -1,15 +1,15 @@
 #! /usr/bin/python
 
 # -------------------------------------------------------------------------------
-# Name:        mh_bus_listener
+# Name:        mhbus_listener
 # Version:     1.5
-# Purpose:     Automazione domestica con sistema domotico bticino MyHome(r)
+# Purpose:     Home automation system with bticino MyHome(R)
 #
 # Author:      Flavio Giovannangeli
 # e-mail:      flavio.giovannangeli@gmail.com
 #
 # Created:     15/10/2013
-# Updated:     05/12/2013
+# Updated:     13/02/2014
 # Licence:     GPLv3
 # -------------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ CFGFILENAME = 'mhblconf.xml'
 
 def main():
     # ****************************************************************************************************************
-    # *** S T A R T ...XY                                                                                            ***
+    # *** S T A R T ...                                                                                          ***
     # ****************************************************************************************************************
     try:
         # ***********************************************************
@@ -107,11 +107,11 @@ def main():
                         afframes = []
                         while smon:
                             # Lettura dati in arrivo dal bus
-                            frames = mhobj.RecData
+                            frames = mhobj.mh_receive_data(smon)
                             if frames != '':
                                 # Controllo prima di tutto che la frame open sia nel formato corretto (*...##)
                                 if (frames.startswith('*') and frames.endswith('##')):
-                                    # OK, controllo se si tratta di ACK o NACK che vengono ignorati.
+                                    # OK, controllo se si tratta di ACK o NACK, che vengono ignorati.
                                     if not (frames == ACK or frames == NACK):
                                         # Separazione frame (nel caso ne arrivino piu' di uno)
                                         frames = frames.split('##')
@@ -122,7 +122,7 @@ def main():
                                                 if DEBUG == 1:
                                                     print 'Frame open in transito:' + msgOpen
                                                 # Extract WHO and write log
-                                                who = mhconn.ExtractWho(msgOpen)
+                                                who = mhobj.mh_get_who(msgOpen)
                                                 if DEBUG == 1:
                                                     print 'CHI rilevato:' + str(who)
                                                 # Se il 'CHI' non e' tra quelli da filtrare, scrivi il log
@@ -130,7 +130,7 @@ def main():
                                                 if who not in iwhofilter:
                                                     # Controlla se e' richiesta la traduzione del 'CHI'
                                                     if strawho == 'Y':
-                                                        mLog.WriteLog(flog,msgOpen + ' [' + mhconn.ExtractDescrWho(who,strawholang) + ']')
+                                                        mLog.WriteLog(flog,msgOpen + ' [' + mhobj.mh_get_who_descr(who,strawholang) + ']')
                                                     else:
                                                         mLog.WriteLog(flog,msgOpen)
                                                     # Gestione voci antifurto
@@ -342,19 +342,21 @@ def opencmd_service(opencmd):
         # Lettura parametri Pushover da file di configurazione
         mhgateway_ip = ET.parse(CFGFILENAME).find("gateways/gateway[@priority='1']").attrib['address']
         mhgateway_port = ET.parse(CFGFILENAME).find("gateways/gateway[@priority='1']").attrib['port']
-        # Connessione al gateway
-        scmd = mMyHome.Connect(mhgateway_ip,mhgateway_port)
+        # Instanziamento classe MyHome
+        mhobj = myhome(mhgateway_ip,mhgateway_port)
+        # Connessione all'impianto MyHome...
+        scmd = mhobj.mh_connect()
         mhcmd  = opencmd.split(';')
         if scmd != None:
             time.sleep(1)
-            if mMyHome.RecData(scmd) == ACK:
+            if mhobj.mh_receive_data(scmd) == ACK:
                 # OK, apertura sessione comandi
-                mMyHome.SendData(scmd, COMMANDS)
+                mhobj.mh_send_data(scmd, COMMANDS)
                 time.sleep(1)
                 i = 0
                 while i < len(mhcmd):
                     if mhcmd[i]:
-                        if not mMyHome.SendData(scmd,mhcmd[i]) == True:
+                        if not mhobj.mh_send_data(scmd,mhcmd[i]) == True:
                             bOK = False
                         i = i + 1
                     else:
