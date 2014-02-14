@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0"?>
 <mhbl>
-	<log file="D:\Gdrive\Google Drive\Doc.sviluppo\Python\mh_bus_listener\v1.5\mhlog" who_filter="13" who_translate="Y" who_lang="ITA"/>
+	<log file="D:\gitrepo\mhbus_listener\mhlog" who_filter="13" who_translate="Y" who_lang="ITA"/>
 	<gateways>
 		<gateway gwID="1" priority="1" descr="MH200N" address="192.168.1.4" port="20000"/>
 		<gateway gwID="2" priority="2" descr="TS35" address="192.168.1.3" port="20000"/>

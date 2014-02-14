@@ -19,7 +19,7 @@ class log:
             logTime = time.localtime(time.time())
             month = str(time.strftime('%m', logTime))
             year = str(time.strftime('%Y', logTime))
-            sfile = filename + '_' + month + year[2:] + '.txt'
+            sfile = self._pathfilelog + '_' + month + year[2:] + '.txt'
             flog = open(sfile,'a')
             frtlogTime = time.strftime('%d/%m/%Y %H:%M:%S', logTime)
             flog.write(frtlogTime + ';' + description + '\n')

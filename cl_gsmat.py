@@ -23,7 +23,7 @@
 #   M O D U L E S  #
 
 import serial
-import pdu
+import m_pdu
 import sys
 import time
 

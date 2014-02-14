@@ -41,10 +41,10 @@ import httplib, urllib
 import json as simplejson
 import re
 import os
-import mLog
-from mMyHome import myhome
-from mAT import gsmdevice
-from mTwitterApi import twtapi
+from cl_log import log
+from cl_btbus import myhome
+from cl_gsmat import gsmdevice
+from m_twitterapi import twtapi
 
 
 #   V A R I A B L E S   #
@@ -77,6 +77,7 @@ def main():
         mhgateway_port = ET.parse(CFGFILENAME).find("gateways/gateway[@priority='1']").attrib['port']
         # Lettura percorso e nome del file di log.
         flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
+        logobj = log(flog)
         # Lettura dei 'CHI' da filtrare.
         iwhofilter = map(int, ET.parse(CFGFILENAME).find("log[@file]").attrib['who_filter'].split(','))
         # Lettura parametri di traduzione del 'CHI'.
@@ -87,7 +88,7 @@ def main():
         # ***********************************************************
         # ** CONNESSIONE AL GATEWAY                                **
         # ***********************************************************
-        mLog.WriteLog(flog,'mhbus_listener v1.5 started.')
+        logobj.write('mhbus_listener v1.5 started.')
         # Controllo presenza parametri necessari
         if mhgateway_ip and mhgateway_port and flog:
             # Instanziamento classe MyHome
@@ -97,13 +98,13 @@ def main():
             if smon:
                 # Controllo risposta del gateway
                 if mhobj.mh_receive_data(smon) == ACK:
-                    mLog.WriteLog(flog,'bticino gateway ' + mhgateway_ip + ' connected.')
+                    logobj.write('bticino gateway ' + mhgateway_ip + ' connected.')
                     # OK, attivazione modalita' 'MONITOR'
                     mhobj.mh_send_data(smon,MONITOR)
                     # Controllo risposta del gateway
                     if mhobj.mh_receive_data(smon) == ACK:
                         # Modalita' MONITOR attivata.
-                        mLog.WriteLog(flog,'OK, Ready!')
+                        logobj.write('OK, Ready!')
                         # ***********************************************************
                         # ** ASCOLTO BUS...                                        **
                         # ***********************************************************
@@ -133,9 +134,9 @@ def main():
                                                 if who not in iwhofilter:
                                                     # Controlla se e' richiesta la traduzione del 'CHI'
                                                     if strawho == 'Y':
-                                                        mLog.WriteLog(flog,msgOpen + ' [' + mhobj.mh_get_who_descr(who,strawholang) + ']')
+                                                        logobj.write(msgOpen + ' [' + mhobj.mh_get_who_descr(who,strawholang) + ']')
                                                     else:
-                                                        mLog.WriteLog(flog,msgOpen)
+                                                        logobj.write(msgOpen)
                                                     # Gestione voci antifurto
                                                     if who == 5 and msgOpen != '*5*3*##':
                                                         if msgOpen not in afframes:
@@ -149,28 +150,28 @@ def main():
                                                     ControlloEventi(msgOpen)
                                 else:
                                     # Frame non riconosciuta!
-                                    mLog.WriteLog(flog,msgOpen + ' [STRINGA OPENWEBNET NON RICONOSCIUTA!]')
+                                    logobj.write(msgOpen + ' [STRINGA OPENWEBNET NON RICONOSCIUTA!]')
                     else:
                         # KO, non e' stato possibile attivare la modalita' MONITOR, impossibile proseguire.
-                        mLog.WriteLog(flog,'IL GATEWAY ' + mhgateway_ip + ' HA RIFIUTATO LA MODALITA'' MONITOR. ARRIVEDERCI!')
+                        logobj.write('IL GATEWAY ' + mhgateway_ip + ' HA RIFIUTATO LA MODALITA'' MONITOR. ARRIVEDERCI!')
                         ExitApp()
                 else:
                     # KO, il gateway non ha risposto nel tempo previsto, impossibile proseguire.
-                    mLog.WriteLog(flog,'IL GATEWAY ' + mhgateway_ip + ' NON HA RISPOSTO NEL TEMPO PREVISTO. ARRIVEDERCI!')
+                    logobj.write('IL GATEWAY ' + mhgateway_ip + ' NON HA RISPOSTO NEL TEMPO PREVISTO. ARRIVEDERCI!')
                     ExitApp()
             else:
                 # KO, il gateway non e' stato trovato, impossibile proseguire.
                 #print 'NESSUN GATEWAY BTICINO TROVATO ALL''INDIRIZZO ' + mhgateway_ip + '! ARRIVEDERCI!'
-                mLog.WriteLog(flog,'NESSUN GATEWAY BTICINO TROVATO ALL''INDIRIZZO ' + mhgateway_ip + '! ARRIVEDERCI!')
+                logobj.write('NESSUN GATEWAY BTICINO TROVATO ALL''INDIRIZZO ' + mhgateway_ip + '! ARRIVEDERCI!')
                 ExitApp()
         else:
             # KO, errore nella lettura di parametri indispensabili, impossibile proseguire.
-            mLog.WriteLog(flog,'ERRORE NELLA LETTURA DI PARAMETRI INDISPENSABILI. ARRIVEDERCI!')
+            logobj.write('ERRORE NELLA LETTURA DI PARAMETRI INDISPENSABILI. ARRIVEDERCI!')
             ExitApp()
     except Exception, err:
         if DEBUG == 1:
             print 'Errore in f.main! [' + str(sys.stderr.write('ERROR: %s\n' % str(err))) + ']'
-        mLog.WriteLog(flog,'Errore in f.main! [' + str(sys.stderr.write('ERROR: %s\n' % str(err))) + ']')
+        logobj.write('Errore in f.main! [' + str(sys.stderr.write('ERROR: %s\n' % str(err))) + ']')
 
 
 def ControlloEventi(msgOpen):
@@ -192,18 +193,18 @@ def ControlloEventi(msgOpen):
                     # ***********************************************************
                     povdata = data.split('|')
                     if pushover_service(povdata[1]) == True:
-                        mLog.WriteLog(flog,'Inviato messaggio pushover a seguito di evento ' + msgOpen)
+                        logobj.write('Inviato messaggio pushover a seguito di evento ' + msgOpen)
                     else:
-                        mLog.WriteLog(flog,'Errore invio messaggio pushover a seguito di evento ' + msgOpen)
+                        logobj.write('Errore invio messaggio pushover a seguito di evento ' + msgOpen)
                 elif channel == 'SMS':
                     # ***********************************************************
                     # ** INVIO ALERT TRAMITE SMS (necessario mod.GSM su RS-232)**
                     # ***********************************************************
                     smsdata = data.split('|')
                     if sms_service(smsdata[0],smsdata[1]) == True:
-                        mLog.WriteLog(flog,'Inviato/i SMS a ' + smsdata[0] + ' a seguito di evento ' + msgOpen)
+                        logobj.write('Inviato/i SMS a ' + smsdata[0] + ' a seguito di evento ' + msgOpen)
                     else:
-                        mLog.WriteLog(flog,'Errore invio SMS a seguito di evento ' + msgOpen)
+                        logobj.write('Errore invio SMS a seguito di evento ' + msgOpen)
                 elif channel == 'TWT':
                     # ***********************************************************
                     # ** INVIO ALERT TRAMITE TWEET PRIVATO                     **
@@ -211,9 +212,9 @@ def ControlloEventi(msgOpen):
                     import mTwitterApi
                     twtdata = data.split('|')
                     if twitter_service(twtdata[0],twtdata[1]) == True:
-                        mLog.WriteLog(flog,'Inviato tweet privato a ' + twtdata[0] + ' a seguito di evento ' + msgOpen)
+                        logobj.write('Inviato tweet privato a ' + twtdata[0] + ' a seguito di evento ' + msgOpen)
                     else:
-                        mLog.WriteLog(flog,'Errore invio tweet privato a seguito di evento ' + msgOpen)
+                        logobj.write('Errore invio tweet privato a seguito di evento ' + msgOpen)
                 elif channel == 'EML':
                     # ***********************************************************
                     # ** INVIO ALERT TRAMITE E-MAIL                            **
@@ -221,18 +222,18 @@ def ControlloEventi(msgOpen):
                     import mEmail
                     emldata = data.split('|')
                     if email_service(emldata[0],'MyHome',emldata[1]) == True:
-                        mLog.WriteLog(flog,'Inviata/e e-mail a ' + emldata[0] + ' a seguito di evento ' + msgOpen)
+                        logobj.write('Inviata/e e-mail a ' + emldata[0] + ' a seguito di evento ' + msgOpen)
                     else:
-                        mLog.WriteLog(flog,'Errore invio e-mail a seguito di evento ' + msgOpen)
+                        logobj.write('Errore invio e-mail a seguito di evento ' + msgOpen)
                 elif channel == 'BUS':
                     # ***********************************************************
                     # ** INVIO COMANDO/I OPEN SUL BUS                          **
                     # ***********************************************************
                     busdata = data.split('|')
                     if opencmd_service(busdata[0]) == True:
-                        mLog.WriteLog(flog,'Eseguito/i comando/i OPEN preimpostato/i a seguito di evento ' + msgOpen)
+                        logobj.write('Eseguito/i comando/i OPEN preimpostato/i a seguito di evento ' + msgOpen)
                     else:
-                        mLog.WriteLog(flog,'Errore esecuzione comando/i OPEN preimpostato/i a seguito di evento ' + msgOpen)
+                        logobj.write('Errore esecuzione comando/i OPEN preimpostato/i a seguito di evento ' + msgOpen)
                 elif channel == 'OSE':
                     # ***********************************************************
                     # ** INVIO DATO A PIATTAFORMA WEB OPEN.SES.SE              **
@@ -241,18 +242,18 @@ def ControlloEventi(msgOpen):
                     osefeedid = osedata[0]
                     osevalue = osedata[1]
                     if send_to_opensense(osefeedid,osevalue) == True:
-                        mLog.WriteLog(flog,'Inviato dato a piattaforma Open.Sen.Se (feed id:' + osefeedid + ', valore:' + osevalue + ') a seguito di evento ' + msgOpen)
+                        logobj.write('Inviato dato a piattaforma Open.Sen.Se (feed id:' + osefeedid + ', valore:' + osevalue + ') a seguito di evento ' + msgOpen)
                     else:
-                        mLog.WriteLog(flog,'Errore invio dato a piattaforma Open.Sen.Se (feed id:' + osefeedid + ', valore:' + osevalue + ') a seguito di evento ' + msgOpen)
+                        logobj.write('Errore invio dato a piattaforma Open.Sen.Se (feed id:' + osefeedid + ', valore:' + osevalue + ') a seguito di evento ' + msgOpen)
                 else:
                     # Error
-                    mLog.WriteLog(flog,'Canale di notifica non riconosciuto! [' + action + ']')
+                    logobj.write('Canale di notifica non riconosciuto! [' + action + ']')
             else:
-                mLog.WriteLog(flog,'Alert non gestito causa canale <' + channel + '> non abilitato!')
+                logobj.write('Alert non gestito causa canale <' + channel + '> non abilitato!')
     except:
         if DEBUG == 1:
             print 'Errore in f.ControlloEventi! [' + str(sys.exc_info()[0]) + ']'
-        mLog.WriteLog(flog,'Errore in f.ControlloEventi! [' + str(sys.exc_info()[0]) + ']')
+        logobj.write('Errore in f.ControlloEventi! [' + str(sys.exc_info()[0]) + ']')
 
 
 def pushover_service(pomsg):
@@ -418,7 +419,7 @@ def ExitApp():
         smon.close
     except:
         # Exit
-        if not mLog.WriteLog(flog,'DISCONNESSO DAL GATEWAY. ARRIVEDERCI!'):
+        if not logobj.write('DISCONNESSO DAL GATEWAY. ARRIVEDERCI!'):
             print 'DISCONNESSO DAL GATEWAY. ARRIVEDERCI!'
         pushover_service('mhbus_listener v1.5 closed!')
         sys.exit()
