@@ -44,6 +44,7 @@ import os
 from cl_log import log
 from cl_btbus import myhome
 from cl_gsmat import gsmdevice
+from cl_email import emailsender
 from m_twitterapi import twtapi
 
 
@@ -179,6 +180,7 @@ def ControlloEventi(msgOpen):
     try:
         # Lettura percorso e nome del file di log.
         flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
+        logobj = log(flog)
         # Cerca trigger evento legato alla frame open ricevuta.
         for elem in ET.parse(CFGFILENAME).iterfind("alerts/alert[@trigger='" + msgOpen + "']"):
             channel = elem.attrib['channel']
@@ -219,9 +221,8 @@ def ControlloEventi(msgOpen):
                     # ***********************************************************
                     # ** INVIO ALERT TRAMITE E-MAIL                            **
                     # ***********************************************************
-                    import mEmail
                     emldata = data.split('|')
-                    if email_service(emldata[0],'MyHome',emldata[1]) == True:
+                    if email_service(emldata[0],'mhbus_listener alert',emldata[1]) == True:
                         logobj.write('Inviata/e e-mail a ' + emldata[0] + ' a seguito di evento ' + msgOpen)
                     else:
                         logobj.write('Errore invio e-mail a seguito di evento ' + msgOpen)
@@ -250,7 +251,7 @@ def ControlloEventi(msgOpen):
                     logobj.write('Canale di notifica non riconosciuto! [' + action + ']')
             else:
                 logobj.write('Alert non gestito causa canale <' + channel + '> non abilitato!')
-    except:
+    except Exception, err:
         if DEBUG == 1:
             print 'Errore in f.ControlloEventi! [' + str(sys.exc_info()[0]) + ']'
         logobj.write('Errore in f.ControlloEventi! [' + str(sys.exc_info()[0]) + ']')
@@ -333,9 +334,18 @@ def twitter_service(twtdest,twttext):
 def email_service(emldest,emlobj,emltext):
     bOK = True
     try:
-        if not mEmail.SendMail(emldest,emlobj,emltext) == True:
+        # Lettura parametri e-mail da file di configurazione
+        smtpsrv = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['smtp']
+        smtpport = cset = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['smtp_port']
+        smtpauth = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['smtp_auth']
+        smtpuser = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['smtp_user']
+        smtppsw = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['smtp_psw']
+        smtptls = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['smtp_tls_sec']
+        sender = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['sender']
+        mailobj = emailsender(smtpsrv,smtpport,smtpauth,smtpuser,smtppsw,smtptls,sender)
+        if not mailobj.send_email(emldest,emlobj,emltext) == True:
             bOK = False
-    except:
+    except Exception, err:
         bOK = False
     finally:
         return bOK

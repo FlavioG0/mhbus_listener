@@ -23,7 +23,7 @@
 #   M O D U L E S  #
 
 import serial
-import m_pdu
+from cl_pdu import PDU
 import sys
 import time
 
@@ -42,12 +42,12 @@ class gsmdevice:
         self.pserial_port = serport
         self.pserial_baud = serspeed
 
-    def send_sms(numdest,msgtext):
+    def send_sms(self,numdest,msgtext):
         # Send an sms over COM serial port
         bOK = True
         try:
             # Encode SMS in PDU format
-            pduobj = pdu.PDU()
+            pduobj = PDU()
             pdustring = pduobj.encodeSMS(numdest,msgtext)
             #print 'numdest:' + numdest
             #print 'msgtext:' + msgtext

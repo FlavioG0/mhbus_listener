@@ -7,7 +7,7 @@
 	</gateways>
 	<channels>
 	    <channel type="SMS" descr="SMS" enabled="Y" serport="/dev/ttyUSB0" serspeed="115200"/>
-		<channel type="EML" descr="e-mail" enabled="Y" sender="mhraspi@gmail.com" smtp="smtp.gmail.com" smtp_user="mhraspi" smtp_psw="abc123" smtp_port="25" smtp_auth="Y" smtp_tls_sec="Y"/>
+		<channel type="EML" descr="e-mail" enabled="Y" sender="mhraspi@gmail.com" smtp="smtp.gmail.com" smtp_user="mhraspi" smtp_psw="mhflavio67" smtp_port="25" smtp_auth="Y" smtp_tls_sec="Y"/>
 		<channel type="POV" descr="Pushover" enabled="Y" api_token="aidDvf6kSxcAvd4im4rkx8y8kT9dex" user_key="uTr1vsTiphNFCH1qvi8q7PPTeCpR1X" address="api.pushover.net:443"/>
 		<channel type="TWT" descr="Twitter" enabled="N" ckey="XD83gt5T44k565dLtW0FhQ" csecret="SzX58HbCuHT1wFlafrrZQhd2dCRUUJo6qSKOBXk0ac" atkey="916871077-H4K17FF4nyMeFBpJxqKMQUhAl9DfaRgdyvbllnrA" atsecret="mH86gNcouEAsPfsJf9xL20KUlGduzkC7K2uDWBbe1zA"/>
 		<channel type="OSE" descr="Open.Sen.Se" enabled="Y" api_token="1q4l7vSBAd3DFWbzHp1zzw"/>
@@ -33,11 +33,11 @@
 		<alert trigger="*5*7*##" channel="POV" data="ND|Tensione di rete presente."/>
 		<alert trigger="*1*1*28##" channel="POV" data="ND|Rete Wi-Fi disponibile."/>
 		<alert trigger="*1*0*28##" channel="POV" data="ND|Rete Wi-Fi non disponibile."/>
-		<alert trigger="*1*1*12##" channel="OSE" data="33987|1"/>
-		<alert trigger="*1*0*12##" channel="OSE" data="33987|0"/>
+		<alert trigger="*1*1*26##" channel="OSE" data="33987|1"/>
+		<alert trigger="*1*0*26##" channel="OSE" data="33987|0"/>
 		<alert trigger="*1*1*15##" channel="BUS" data="*1*1*11##|ND"/>
 		<alert trigger="*1*1*33##" channel="TWT" data="@FlavioGio78|Test invio messaggio tramite canale twitter."/>
-		<alert trigger="*1*1*11##" channel="EML" data="fla.giovannangeli@facebook.com|Test invio messaggio tramite canale facebook."/>
-		<alert trigger="*1*1*26##" channel="SMS" data="393395882183|Test invio SMS."/>
+		<alert trigger="*1*1*11##" channel="EML" data="fgiovannangeli@iccrea.bcc.it;romina.trivelloni@gmail.com|Test invio messaggio tramite canale facebook."/>
+		<alert trigger="*1*1*12##" channel="SMS" data="393395882183|Test invio SMS."/>
 	</alerts>
 </mhbl>
