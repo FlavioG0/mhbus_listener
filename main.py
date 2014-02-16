@@ -45,6 +45,7 @@ from cl_log import log
 from cl_btbus import myhome
 from cl_gsmat import gsmdevice
 from cl_email import emailsender
+from cl_xively import xivelyapi
 from m_twitterapi import twtapi
 
 
@@ -238,6 +239,7 @@ def ControlloEventi(msgOpen):
                 elif channel == 'OSE':
                     # ***********************************************************
                     # ** INVIO DATO A PIATTAFORMA WEB OPEN.SES.SE              **
+                    # ** https://sen.se/                                       **
                     # ***********************************************************
                     osedata = data.split('|')
                     osefeedid = osedata[0]
@@ -246,6 +248,18 @@ def ControlloEventi(msgOpen):
                         logobj.write('Inviato dato a piattaforma Open.Sen.Se (feed id:' + osefeedid + ', valore:' + osevalue + ') a seguito di evento ' + msgOpen)
                     else:
                         logobj.write('Errore invio dato a piattaforma Open.Sen.Se (feed id:' + osefeedid + ', valore:' + osevalue + ') a seguito di evento ' + msgOpen)
+                elif channel == 'XIV':
+                    # ***********************************************************
+                    # ** INVIO DATO A PIATTAFORMA XIVELY                       **
+                    # ** https://xively.com                                    **
+                    # ***********************************************************
+                    xivdata = data.split('|')
+                    xivdsid = xivdata[0]
+                    xivvalue = xivdata[1]
+                    if xively_service(xivdsid,xivvalue) == True:
+                        logobj.write('Inviato dato a piattaforma Xively (Data stream ID:' + xivdsid + ', valore:' + xivvalue + ') a seguito di evento ' + msgOpen)
+                    else:
+                        logobj.write('Errore invio dato a piattaforma Xively (Data stream ID:' + xivdsid + ', valore:' + xivvalue + ') a seguito di evento ' + msgOpen)
                 else:
                     # Error
                     logobj.write('Canale di notifica non riconosciuto! [' + action + ']')
@@ -387,6 +401,19 @@ def opencmd_service(opencmd):
     finally:
         return bOK
 
+def xively_service(xivdsid,xivvalue):
+    bOK = True
+    try:
+        # Lettura parametri xively da file di configurazione
+        xivapikey = ET.parse(CFGFILENAME).find("channels/channel[@type='XIV']").attrib['api_token']
+        xivfeedid = ET.parse(CFGFILENAME).find("channels/channel[@type='XIV']").attrib['feed_id']
+        xivobj = xivelyapi(xivapikey,xivfeedid)
+        if not xivobj.send_value(xivdsid,xivvalue) == True:
+            bOK = False
+    except Exception, err:
+        bOK = False
+    finally:
+        return bOK
 
 def send_to_opensense(feedId,value):
     bOK = True
