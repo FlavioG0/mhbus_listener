@@ -29,7 +29,7 @@ import socket
 
 class myhome:
 
-    DEBUG = 1
+    DEBUG = 0
 
     def __init__(self,mhgwaddr,mhgwport):
         self.mh_gwaddr = mhgwaddr
@@ -98,79 +98,118 @@ class myhome:
                 descrwho = 'AUTOMAZIONE'
             elif lang == 'ENG':
                 descrwho = 'AUTOMATION'
+            else:
+                descrwho = 'XYZ'
         elif who == 3:
             if lang == 'ITA':
                 descrwho = 'CONTROLLO CARICHI'
             elif lang == 'ENG':
                 descrwho = 'LOADS CONTROL'
+            else:
+                descrwho = 'XYZ'
         elif who == 4:
             if lang == 'ITA':
                 descrwho = 'TERMOREGOLAZIONE'
             elif lang == 'ENG':
                 descrwho = 'TEMPERATURE CONTROL'
+            else:
+                descrwho = 'XYZ'
         elif who == 5:
             if lang == 'ITA':
                 descrwho = 'ANTIFURTO'
             elif lang == 'ENG':
                 descrwho = 'ALARM'
+            else:
+                descrwho = 'XYZ'
         elif who == 6:
             if lang == 'ITA':
                 descrwho = 'VIDEOCITOFONIA'
             elif lang == 'ENG':
                 descrwho = 'VDES'
+            else:
+                descrwho = 'XYZ'
+        elif who == 9:
+            if lang == 'ITA':
+                descrwho = 'CANALE AUSILIARIO'
+            elif lang == 'ENG':
+                descrwho = 'AUX'
+            else:
+                descrwho = 'XYZ'
         elif who == 13:
             if lang == 'ITA':
                 descrwho = 'GATEWAY INFO'
             elif lang == 'ENG':
                 descrwho = 'GATEWAY MANAGEMENT'
+            else:
+                descrwho = 'XYZ'
         elif who == 15:
             if lang == 'ITA':
                 descrwho = 'COMANDI CEN'
             elif lang == 'ENG':
                 descrwho = 'CEN COMMANDS'
+            else:
+                descrwho = 'XYZ'
         elif who == 16:
             if lang == 'ITA':
                 descrwho = 'AUDIO DIFFUSIONE'
             elif lang == 'ENG':
                 descrwho = 'SOUND DIFFUSION'
+            else:
+                descrwho = 'XYZ'
         elif who == 22:
             if lang == 'ITA':
                 descrwho = 'AUDIO DIFFUSIONE'
             elif lang == 'ENG':
                 descrwho = 'SOUND DIFFUSION'
+            else:
+                descrwho = 'XYZ'
         elif who == 17:
             if lang == 'ITA':
                 descrwho = 'SCENARI MH200N'
             elif lang == 'ENG':
                 descrwho = 'MH200N SCENARIOS'
+            else:
+                descrwho = 'XYZ'
         elif who == 18:
             if lang == 'ITA':
                 descrwho = 'GESTIONE ENERGIA'
             elif lang == 'ENG':
                 descrwho = 'ENERGY MANAGEMENT'
+            else:
+                descrwho = 'XYZ'
         elif who == 25:
             if lang == 'ITA':
                 descrwho = 'CEN PLUS, SCENARI PLUS, CONTATTI'
             elif lang == 'ENG':
                 descrwho = 'CEN PLUS, SCENARIOS PLUS, DRY CONTACTS'
+            else:
+                descrwho = 'XYZ'
         elif who == 1001:
             if lang == 'ITA':
                 descrwho = 'DIAGNOSTICA ILLUMINAZIONE'
             elif lang == 'ENG':
                 descrwho = 'AUTOMATION DIAGNOSTIC'
+            else:
+                descrwho = 'XYZ'
         elif who == 1004:
             if lang == 'ITA':
                 descrwho = 'DIAGNOSTICA TERMOREGOLAZIONE'
             elif lang == 'ENG':
                 descrwho = 'THERMOREGULATION DIAGNOSTIC'
+            else:
+                descrwho = 'XYZ'
         elif who == 1013:
             if lang == 'ITA':
                 descrwho = 'DIAGNOSTICA DISPOSITIVI'
             elif lang == 'ENG':
                 descrwho = 'DEVICE DIAGNOSTIC'
+            else:
+                descrwho = 'XYZ'
         else:
             if lang == 'ITA':
                 descrwho = 'CHI SCONOSCIUTO'
             elif lang == 'ENG':
                 descrwho = 'UNKNOWN WHO'
+            else:
+                descrwho = 'XYZ'
         return descrwho

@@ -1,4 +1,4 @@
-V.1.5 - Febbrary 2014
-* Add xml configuration file;
-* Send events to "Open.Sen.Se" platform;
-* Send events to "Xively" platform;
+V.1.6 - October 2014
+* Add daily log option;
+* Add temperature trigger;
+* Add batch trigger.

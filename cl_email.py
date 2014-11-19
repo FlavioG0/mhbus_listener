@@ -25,8 +25,7 @@ from email import Encoders
 
 class emailsender:
 
-    DEBUG = 1
-    CFGFILENAME = 'mh_bus_listener.cfg'
+    DEBUG = 0
 
     def __init__(self,smtpsrv,smtpport,smtpauth,smtpuser,smtppsw,smtptls,sender):
         self._smtpsrv = smtpsrv

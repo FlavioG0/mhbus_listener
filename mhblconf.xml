@@ -1,43 +1,44 @@
 ﻿<?xml version="1.0"?>
 <mhbl>
-	<log file="/var/ftp/flavio/myhome/log/mhlog" who_filter="13" who_translate="Y" who_lang="ITA"/>
+	<log file="/var/ftp/flavio/myhome/log/mhlog" type="D" who_filter="13" who_translate="Y" who_lang="ITA"/>
 	<gateways>
 		<gateway gwID="1" priority="1" descr="MH200N" address="192.168.1.4" port="20000"/>
 		<gateway gwID="2" priority="2" descr="TS35" address="192.168.1.3" port="20000"/>
 	</gateways>
 	<channels>
-		<channel type="BUS" descr="Bus SCS" enabled="Y" gateway="1"/>
 	    <channel type="SMS" descr="SMS" enabled="Y" serport="/dev/ttyUSB0" serspeed="115200"/>
 		<channel type="EML" descr="e-mail" enabled="Y" sender="mhraspi@gmail.com" smtp="smtp.gmail.com" smtp_user="mhraspi" smtp_psw="mhflavio67" smtp_port="25" smtp_auth="Y" smtp_tls_sec="Y"/>
 		<channel type="POV" descr="Pushover" enabled="Y" api_token="aidDvf6kSxcAvd4im4rkx8y8kT9dex" user_key="uTr1vsTiphNFCH1qvi8q7PPTeCpR1X" address="api.pushover.net:443"/>
 		<channel type="TWT" descr="Twitter" enabled="N" ckey="XD83gt5T44k565dLtW0FhQ" csecret="SzX58HbCuHT1wFlafrrZQhd2dCRUUJo6qSKOBXk0ac" atkey="916871077-H4K17FF4nyMeFBpJxqKMQUhAl9DfaRgdyvbllnrA" atsecret="mH86gNcouEAsPfsJf9xL20KUlGduzkC7K2uDWBbe1zA"/>
-		<channel type="OSE" descr="Open.Sen.Se platform" enabled="Y" api_token="1q4l7vSBAd3DFWbzHp1zzw"/>
-		<channel type="XIV" descr="Xively platform" enabled="Y" api_token="zHRruTnHzr091CKtC9rPuJ3PJt3yFyBmbOmM5mKOAHu5hy1n" feed_id="1349336828"/>
+		<channel type="OSE" descr="Open.Sen.Se" enabled="Y" api_token="1q4l7vSBAd3DFWbzHp1zzw"/>
+		<channel type="BUS" descr="Bus SCS" enabled="Y" gateway="1"/>
+		<channel type="BAT" descr="Batch" enabled="Y"/>
 	</channels>
 	<alerts>
-		<alert trigger="*5*15*#1##" channel="SMS" data="393395882183;393392343950|Antifurto Z1:ALLARME INTRUSIONE PORTA BLINDATA!"/>
-		<alert trigger="*5*15*#2##" channel="SMS" data="393395882183;393392343950|Antifurto Z2:ALLARME INTRUSIONE PERIMETRO!"/>
-		<alert trigger="*5*15*#3##" channel="SMS" data="393395882183;393392343950|Antifurto Z3:ALLARME INTRUSIONE TAPPARELLA MATRIMONIALE!"/>
-		<alert trigger="*5*15*#4##" channel="SMS" data="393395882183;393392343950|Antifurto Z4:ALLARME INTRUSIONE FINESTRA MATRIMONIALE!"/>
-		<alert trigger="*5*16*#1##" channel="SMS" data="393395882183;393392343950|Antifurto Z1:ALLARME MANOMISSIONE PORTA BLINDATA!"/>
-		<alert trigger="*5*16*#2##" channel="SMS" data="393395882183;393392343950|Antifurto Z2:ALLARME MANOMISSIONE PERIMETRO!"/>
-		<alert trigger="*5*16*#3##" channel="SMS" data="393395882183;393392343950|Antifurto Z3:ALLARME MANOMISSIONE TAPP. MATRIMONIALE!"/>
-		<alert trigger="*5*16*#4##" channel="SMS" data="393395882183;393392343950|Antifurto Z4:ALLARME MANOMISSIONE FIN. MATRIMONIALE!"/>
+		<alert trigger="*5*15*#1##" channel="SMS" data="393395882183;393392343950|AF_Z1:ALLARME INTRUSIONE PORTA BLINDATA!"/>
+		<alert trigger="*5*15*#2##" channel="SMS" data="393395882183;393392343950|AF_Z2:ALLARME INTRUSIONE PERIMETRO!"/>
+		<alert trigger="*5*15*#3##" channel="SMS" data="393395882183;393392343950|AF_Z3:ALLARME INTRUSIONE TAPPARELLA MATRIMONIALE!"/>
+		<alert trigger="*5*15*#4##" channel="SMS" data="393395882183;393392343950|AF_Z4:ALLARME INTRUSIONE FINESTRA MATRIMONIALE!"/>
+		<alert trigger="*5*16*#1##" channel="SMS" data="393395882183;393392343950|AF_Z1:ALLARME MANOMISSIONE PORTA BLINDATA!"/>
+		<alert trigger="*5*16*#2##" channel="SMS" data="393395882183;393392343950|AF_Z2:ALLARME MANOMISSIONE PERIMETRO!"/>
+		<alert trigger="*5*16*#3##" channel="SMS" data="393395882183;393392343950|AF_Z3:ALLARME MANOMISSIONE TAPP. MATRIMONIALE!"/>
+		<alert trigger="*5*16*#4##" channel="SMS" data="393395882183;393392343950|AF_Z4:ALLARME MANOMISSIONE FIN. MATRIMONIALE!"/>
 		<alert trigger="*5*18*#1##" channel="POV" data="ND|Antifurto:Z1 parzializzata!"/>
 		<alert trigger="*5*18*#2##" channel="POV" data="ND|Antifurto:Z2 parzializzata!"/>
 		<alert trigger="*5*18*#3##" channel="POV" data="ND|Antifurto:Z3 parzializzata!"/>
 		<alert trigger="*5*18*#4##" channel="POV" data="ND|Antifurto:Z4 parzializzata!"/>
-		<alert trigger="*5*10*##" channel="EML" data="flavio.giovannangeli@gmail.com;romina.trivelloni@gmail.com|Antifurto:Batteria tampone da sostituire!"/>
-		<alert trigger="*5*11*##" channel="EML" data="flavio.giovannangeli@gmail.com;romina.trivelloni@gmail.com|Antifurto:Guasto batteria tampone!"/>
+		<alert trigger="*5*10*##" channel="EML" data="flavio.giovannangeli@gmail.com|Batteria tampone antifurto da sostituire!"/>
+		<alert trigger="*5*4*##" channel="EML" data="flavio.giovannangeli@gmail.com|Batteria tampone antifurto da sostituire!"/>
 		<alert trigger="*5*9*0##" channel="POV" data="ND|Antifurto disattivato!"/>
 		<alert trigger="*5*6*##" channel="POV" data="ND|Tensione di rete assente!"/>
 		<alert trigger="*5*7*##" channel="POV" data="ND|Tensione di rete presente."/>
-		<alert trigger="*1*1*28##" channel="POV" data="ND|Rete Wi-Fi accesa."/>
-		<alert trigger="*1*0*28##" channel="POV" data="ND|Rete Wi-Fi spenta."/>
-		<alert trigger="*9*9*98##" channel="OSE" data="33987|1"/>
-		<alert trigger="*9*9*99##" channel="OSE" data="33987|0"/>
-		<alert trigger="*1*1*22##" channel="XIV" data="GasBoilerHeatingModeTime|1"/>
-		<alert trigger="*1*0*26##" channel="XIV" data="GasBoilerHeatingModeTime|0"/>
-		<alert trigger="*1*1*25##" channel="SMS" data="393395882183;393392343950|Test invio SMS da programma mhbus_lister su raspberryPi."/>
+		<alert trigger="*1*1*28##" channel="POV" data="ND|Wi-Fi ON"/>
+		<alert trigger="*1*0*28##" channel="POV" data="ND|Wi-Fi OFF"/>
+		<alert trigger="TSZ2" channel="POV" tmpopt="LE" tmpval="20" data="ND|Temperatura sonda zona 2 minore-uguale a 20C"/>
+		<alert trigger="TSE1" channel="POV" tmpopt="LE" tmpval="3" data="ND|Attenzione! Pericolo ghiaccio!"/>
+		<alert trigger="*1*1*26##" channel="OSE" data="33987|1"/>
+		<alert trigger="*1*0*26##" channel="OSE" data="33987|0"/>
+		<alert trigger="*1*1*25##" channel="SMS" data="393395882183;393392343950|Test invio SMS."/>
+		<alert trigger="*1*1*15##" channel="BAT" data="/var/ftp/flavio/myhome/pyTermoInfo/pyTermoInfo_v5.py|ND"/>"
 	</alerts>
 </mhbl>

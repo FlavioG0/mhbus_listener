@@ -2,14 +2,14 @@
 
 # -------------------------------------------------------------------------------
 # Name:        mhbus_listener
-# Version:     1.5
+# Version:     1.6
 # Purpose:     Home automation system with bticino MyHome(R)
 #
 # Author:      Flavio Giovannangeli
 # e-mail:      flavio.giovannangeli@gmail.com
 #
 # Created:     15/10/2013
-# Updated:     13/02/2014
+# Updated:     17/11/2014
 # Licence:     GPLv3
 # -------------------------------------------------------------------------------
 
@@ -41,11 +41,11 @@ import httplib, urllib
 import json as simplejson
 import re
 import os
+import platform
 from cl_log import log
-from cl_btbus import myhome
 from cl_gsmat import gsmdevice
 from cl_email import emailsender
-from cl_xively import xivelyapi
+from cl_btbus import myhome
 from m_twitterapi import twtapi
 
 
@@ -77,9 +77,12 @@ def main():
         # Lettura indirizzo IP e porta del gateway ethernet con priorita' 1
         mhgateway_ip = ET.parse(CFGFILENAME).find("gateways/gateway[@priority='1']").attrib['address']
         mhgateway_port = ET.parse(CFGFILENAME).find("gateways/gateway[@priority='1']").attrib['port']
-        # Lettura percorso e nome del file di log.
+        # Lettura percorso e nome del file di log
         flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
-        logobj = log(flog)
+        # Lettura del tipo file di log (D per giornaliero, M per mensile)
+        logtype = ET.parse(CFGFILENAME).find("log[@type]").attrib['type']
+        # Istanzia log
+        logobj = log(flog,logtype)
         # Lettura dei 'CHI' da filtrare.
         iwhofilter = map(int, ET.parse(CFGFILENAME).find("log[@file]").attrib['who_filter'].split(','))
         # Lettura parametri di traduzione del 'CHI'.
@@ -90,7 +93,7 @@ def main():
         # ***********************************************************
         # ** CONNESSIONE AL GATEWAY                                **
         # ***********************************************************
-        logobj.write('mhbus_listener v1.5 started.')
+        logobj.write('mhbus_listener v1.6 started.')
         # Controllo presenza parametri necessari
         if mhgateway_ip and mhgateway_port and flog:
             # Instanziamento classe MyHome
@@ -136,7 +139,7 @@ def main():
                                                 if who not in iwhofilter:
                                                     # Controlla se e' richiesta la traduzione del 'CHI'
                                                     if strawho == 'Y':
-                                                        logobj.write(msgOpen + ' [' + mhobj.mh_get_who_descr(who,strawholang) + ']')
+                                                        logobj.write(msgOpen + ';' + mhobj.mh_get_who_descr(who,strawholang))
                                                     else:
                                                         logobj.write(msgOpen)
                                                     # Gestione voci antifurto
@@ -181,10 +184,62 @@ def ControlloEventi(msgOpen):
     try:
         # Lettura percorso e nome del file di log.
         flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
-        logobj = log(flog)
+        logtype = ET.parse(CFGFILENAME).find("log[@file]").attrib['type']
+        logobj = log(flog,logtype)
+        # Estrazione dati di temperatura se CHI = 4
+        if msgOpen.startswith('*#4*'):
+            if msgOpen.split('*')[3] == '15':
+                # Temp. esterna
+                # Numero sonda
+                nso = int(msgOpen.split('*')[2][0:1])
+                # Lettura temperatura
+                vt = fixtemp(msgOpen.split('*')[5][0:4])
+                # Trigger
+                trigger = 'TSE' + str(nso)
+                # Lettura parametri trigger
+            elif msgOpen.split('*')[3] == '0':
+                # Temp. interna
+                # Numero zona
+                nzo = msgOpen.split('*')[2][0:1]
+                # Lettura temperatura
+                vt = fixtemp(msgOpen.split('*')[4][0:4])
+                # Trigger
+                trigger = 'TSZ' + str(nzo)
+            else:
+                # Altre frame termoregolazione non gestite
+                trigger = msgOpen
+            # Passa il trigger termoregolazazione da gestire alla variabile msgOpen
+            msgOpen = trigger
         # Cerca trigger evento legato alla frame open ricevuta.
         for elem in ET.parse(CFGFILENAME).iterfind("alerts/alert[@trigger='" + msgOpen + "']"):
+            # Estrai canale
             channel = elem.attrib['channel']
+            # Se trigger di temperatura estrai parametri e verificali
+            if msgOpen.startswith('TS'):
+                tempopt = elem.attrib['tmpopt']
+                tempval = float(elem.attrib['tmpval'])
+                if tempopt == 'EQ':
+                    # EQUAL
+                    if not vt == tempval:
+                        break
+                elif tempopt == 'LS':
+                    # LESS THAN
+                    if not vt < tempval:
+                        break
+                elif tempopt == 'LE':
+                    # LESS OR EQUAL
+                    if not vt <= tempval:
+                        break
+                elif tempopt == 'GR':
+                    # GREATER THAN
+                    if not vt > tempval:
+                        break
+                elif tempopt == 'GE':
+                    # GREATER OR EQUAL
+                    if not vt >= tempval:
+                        break
+                # Lettura canale
+                channel = elem.attrib['channel']
             # Controlla stato del canale
             status = ET.parse(CFGFILENAME).find("channels/channel[@type='" + channel + "']").attrib['enabled']
             if status == "Y":
@@ -200,9 +255,9 @@ def ControlloEventi(msgOpen):
                     else:
                         logobj.write('Errore invio messaggio pushover a seguito di evento ' + msgOpen)
                 elif channel == 'SMS':
-                    # ***********************************************************
-                    # ** INVIO ALERT TRAMITE SMS (necessario mod.GSM su RS-232)**
-                    # ***********************************************************
+                    # ************************************************************
+                    # ** INVIO ALERT TRAMITE SMS (necessario mod.GSM su RS-232) **
+                    # ************************************************************
                     smsdata = data.split('|')
                     if sms_service(smsdata[0],smsdata[1]) == True:
                         logobj.write('Inviato/i SMS a ' + smsdata[0] + ' a seguito di evento ' + msgOpen)
@@ -239,7 +294,6 @@ def ControlloEventi(msgOpen):
                 elif channel == 'OSE':
                     # ***********************************************************
                     # ** INVIO DATO A PIATTAFORMA WEB OPEN.SES.SE              **
-                    # ** https://sen.se/                                       **
                     # ***********************************************************
                     osedata = data.split('|')
                     osefeedid = osedata[0]
@@ -248,18 +302,15 @@ def ControlloEventi(msgOpen):
                         logobj.write('Inviato dato a piattaforma Open.Sen.Se (feed id:' + osefeedid + ', valore:' + osevalue + ') a seguito di evento ' + msgOpen)
                     else:
                         logobj.write('Errore invio dato a piattaforma Open.Sen.Se (feed id:' + osefeedid + ', valore:' + osevalue + ') a seguito di evento ' + msgOpen)
-                elif channel == 'XIV':
+                elif channel == 'BAT':
                     # ***********************************************************
-                    # ** INVIO DATO A PIATTAFORMA XIVELY                       **
-                    # ** https://xively.com                                    **
+                    # ** ESECUZIONE SCRIPT/PROGRAMMA BATCH                     **
                     # ***********************************************************
-                    xivdata = data.split('|')
-                    xivdsid = xivdata[0]
-                    xivvalue = xivdata[1]
-                    if xively_service(xivdsid,xivvalue) == True:
-                        logobj.write('Inviato dato a piattaforma Xively (Data stream ID:' + xivdsid + ', valore:' + xivvalue + ') a seguito di evento ' + msgOpen)
+                    busdata = data.split('|')
+                    if batch_service(busdata[0]) == True:
+                        logobj.write('Eseguito batch a seguito di evento ' + msgOpen)
                     else:
-                        logobj.write('Errore invio dato a piattaforma Xively (Data stream ID:' + xivdsid + ', valore:' + xivvalue + ') a seguito di evento ' + msgOpen)
+                        logobj.write('Errore esecuzione batch a seguito di evento ' + msgOpen)
                 else:
                     # Error
                     logobj.write('Canale di notifica non riconosciuto! [' + action + ']')
@@ -286,6 +337,26 @@ def pushover_service(pomsg):
             "message": pomsg,
           }), { "Content-type": "application/x-www-form-urlencoded" })
         conn.getresponse()
+    except:
+        bOK = False
+    finally:
+        return bOK
+
+
+def batch_service(batchdata):
+    bOK = True
+    try:
+        import subprocess
+        # Determina tip osistema operativo
+        ostype = platform.system()
+        if ostype == 'Windows':
+            esito = subprocess.call([batchdata])
+            if esito != 0:
+                bOK = False
+        else:
+            esito = subprocess.call(['.' + batchdata])
+            if esito != 0:
+                bOK = False
     except:
         bOK = False
     finally:
@@ -401,19 +472,6 @@ def opencmd_service(opencmd):
     finally:
         return bOK
 
-def xively_service(xivdsid,xivvalue):
-    bOK = True
-    try:
-        # Lettura parametri xively da file di configurazione
-        xivapikey = ET.parse(CFGFILENAME).find("channels/channel[@type='XIV']").attrib['api_token']
-        xivfeedid = ET.parse(CFGFILENAME).find("channels/channel[@type='XIV']").attrib['feed_id']
-        xivobj = xivelyapi(xivapikey,xivfeedid)
-        if not xivobj.send_value(xivdsid,xivvalue) == True:
-            bOK = False
-    except Exception, err:
-        bOK = False
-    finally:
-        return bOK
 
 def send_to_opensense(feedId,value):
     bOK = True
@@ -438,6 +496,22 @@ def send_to_opensense(feedId,value):
         return bOK
 
 
+def fixtemp(vt):
+    # Adatta il formato di temperatura
+    # Controllo segno temperatura
+    if vt[0:1] == '1':
+        # Temp. negativa
+        vt = float(vt[1:])*-1
+    elif vt[0:1] == '0':
+        # Temp. positiva
+        vt = float(vt)
+    else:
+        # Errore!
+        vt = 999
+    # Mostra temperatura
+    return vt/10
+
+
 def getConfigs(fileconfig,section,key):
     try:
         config = ConfigParser.RawConfigParser()
@@ -451,14 +525,14 @@ def getConfigs(fileconfig,section,key):
 def ExitApp():
     try:
         # Lettura percorso e nome del file di log.
-        flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
+        #flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
         # Close socket.
         smon.close
     except:
         # Exit
         if not logobj.write('DISCONNESSO DAL GATEWAY. ARRIVEDERCI!'):
             print 'DISCONNESSO DAL GATEWAY. ARRIVEDERCI!'
-        pushover_service('mhbus_listener v1.5 closed!')
+        pushover_service('mhbus_listener v1.6 closed!')
         sys.exit()
 
 
