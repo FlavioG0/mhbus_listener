@@ -9,7 +9,7 @@
 # e-mail:      flavio.giovannangeli@gmail.com
 #
 # Created:     15/10/2013
-# Updated:     17/11/2014
+# Updated:     20/11/2014
 # Licence:     GPLv3
 # -------------------------------------------------------------------------------
 
@@ -33,28 +33,38 @@
 
 #   M O D U L E S  & L I B R A R I E S #
 
-import xml.etree.ElementTree as ET
+import re
+import os
 import sys
 import time
+import platform
 import ConfigParser
 import httplib, urllib
 import json as simplejson
-import re
-import os
-import platform
+import xml.etree.ElementTree as ET
 from cl_log import log
-from cl_gsmat import gsmdevice
 from cl_email import emailsender
 from cl_btbus import myhome
-from m_twitterapi import twtapi
+# Modulo opzionale per funzione GSM
+try:
+    from cl_gsmat import gsmdevice
+    gsm_module_available = True
+except ImportError:
+    gsm_module_available = False
+# Modulo opzionale per funzione TWITTER
+try:
+    from cl_twtapi import twtapi
+    twt_module_available = True
+except ImportError:
+    twt_module_available = False
 
 
-#   V A R I A B L E S   #
+#   C O N S T A N T S  #
 
 DEBUG = 1
 # Acknowledge (OPEN message OK)
 ACK = '*#*1##'
-# Not-Acknowledge (OPEN message wrong)
+# Not-Acknowledge (OPEN message KO)
 NACK = '*#*0##'
 # Monitor session
 MONITOR = '*99*1##'
@@ -68,7 +78,7 @@ CFGFILENAME = 'mhblconf.xml'
 
 def main():
     # ****************************************************************************************************************
-    # *** S T A R T ...                                                                                          ***
+    # *** S T A R T   M Y H O M E   E V E N T S   M A N A G E R                                                    ***
     # ****************************************************************************************************************
     try:
         # ***********************************************************
@@ -186,7 +196,7 @@ def ControlloEventi(msgOpen):
         flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
         logtype = ET.parse(CFGFILENAME).find("log[@file]").attrib['type']
         logobj = log(flog,logtype)
-        # Estrazione dati di temperatura se CHI = 4
+        # Se CHI=4 estrazione dati di temperatura.
         if msgOpen.startswith('*#4*'):
             if msgOpen.split('*')[3] == '15':
                 # Temp. esterna
@@ -194,6 +204,9 @@ def ControlloEventi(msgOpen):
                 nso = int(msgOpen.split('*')[2][0:1])
                 # Lettura temperatura
                 vt = fixtemp(msgOpen.split('*')[5][0:4])
+                # Memorizza valori letti in variabile backup
+                nsebck = nso
+                vtebck = vt
                 # Trigger
                 trigger = 'TSE' + str(nso)
                 # Lettura parametri trigger
@@ -203,10 +216,13 @@ def ControlloEventi(msgOpen):
                 nzo = msgOpen.split('*')[2][0:1]
                 # Lettura temperatura
                 vt = fixtemp(msgOpen.split('*')[4][0:4])
+                # Memorizza valori letti in variabile backup
+                nsibck = nzo
+                vtibck = vt
                 # Trigger
                 trigger = 'TSZ' + str(nzo)
             else:
-                # Altre frame termoregolazione non gestite
+                # Ignorare altre frame termoregolazione non gestite.
                 trigger = msgOpen
             # Passa il trigger termoregolazazione da gestire alla variabile msgOpen
             msgOpen = trigger
@@ -265,14 +281,14 @@ def ControlloEventi(msgOpen):
                         logobj.write('Errore invio SMS a seguito di evento ' + msgOpen)
                 elif channel == 'TWT':
                     # ***********************************************************
-                    # ** INVIO ALERT TRAMITE TWEET PRIVATO                     **
+                    # ** INVIO ALERT TRAMITE TWEET                             **
                     # ***********************************************************
-                    import mTwitterApi
+                    twtype = ''
                     twtdata = data.split('|')
                     if twitter_service(twtdata[0],twtdata[1]) == True:
-                        logobj.write('Inviato tweet privato a ' + twtdata[0] + ' a seguito di evento ' + msgOpen)
+                        logobj.write('Inviato tweet a ' + twtdata[0] + ' a seguito di evento ' + msgOpen)
                     else:
-                        logobj.write('Errore invio tweet privato a seguito di evento ' + msgOpen)
+                        logobj.write('Errore invio tweet a seguito di evento ' + msgOpen)
                 elif channel == 'EML':
                     # ***********************************************************
                     # ** INVIO ALERT TRAMITE E-MAIL                            **
@@ -404,8 +420,14 @@ def twitter_service(twtdest,twttext):
             if twdest[i]:
                 if DEBUG == 1:
                     print twdest[i],twttext
-                if not twtobj.send_private_msg(twdest[i],twttext) == True:
-                    bOK = False
+                if twdest[i].startswith('@'):
+                    # Send a private tweet
+                    if not twtobj.send_private_twt(twdest[i],twttext) == True:
+                        bOK = False
+                else:
+                    # Send a public tweet
+                    if not twtobj.send_public_twt(twttext) == True:
+                        bOK = False
                 time.sleep(2)
                 i = i + 1
             else:
@@ -510,16 +532,6 @@ def fixtemp(vt):
         vt = 999
     # Mostra temperatura
     return vt/10
-
-
-def getConfigs(fileconfig,section,key):
-    try:
-        config = ConfigParser.RawConfigParser()
-        config.read(fileconfig)
-        keyvalue = config.get(section, key)
-    except:
-        keyvalue = ''
-    return keyvalue
 
 
 def ExitApp():
