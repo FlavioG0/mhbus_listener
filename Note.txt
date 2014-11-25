@@ -1,4 +1,0 @@
-V.1.6 - October 2014
-* Add daily log option;
-* Add temperature trigger;
-* Add batch trigger.
