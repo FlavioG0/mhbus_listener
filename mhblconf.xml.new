@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<mhbl> 
+	<log file="" type="M" who_filter="" who_translate="Y" who_lang="ENG"/> <!-- Specify the filename without extension -->
+	<gateways> <!-- Gateway(s) priority -->
+		<gateway gwID="1" priority="1" descr="GW1" address="192.168.1.1" port="20000"/>
+		<gateway gwID="2" priority="2" descr="GW2" address="192.168.1.2" port="20000"/>
+	</gateways>
+	<channels> <!-- channels available -->
+	    <channel type="BUS" descr="Bus SCS" enabled="N" gateway="1"/>
+	    <channel type="SMS" descr="SMS" enabled="N" serport="" serspeed=""/>
+		<channel type="EML" descr="e-mail" enabled="N" sender="" smtp="" smtp_user="" smtp_psw="" smtp_port="25" smtp_auth="Y" smtp_tls_sec="Y"/>
+		<channel type="POV" descr="Pushover" enabled="N" api_token="" user_key="" address="api.pushover.net:443"/>
+		<channel type="TWT" descr="Twitter" enabled="N" ckey="" csecret="" atkey="" atsecret=""/>
+		<channel type="OSE" descr="Open.Sen.Se" enabled="N" api_token=""/>
+		<channel type="BAT" descr="Batch" enabled="N"/>
+	</channels>
+	<alerts> <!-- data="destination(s)|message" for all -->
+		<alert trigger="" channel="" data="|"/>
+	</alerts>
+</mhbl>
