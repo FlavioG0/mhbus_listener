@@ -36,7 +36,7 @@ PSERIAL_TIMEOUT = None
 
 # S T A R T  C L A S S  A T
 
-class gsmdevice:
+class GsmDevice:
 
     def __init__(self,serport,serspeed):
         self.pserial_port = serport

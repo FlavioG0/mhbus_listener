@@ -7,7 +7,7 @@ DEBUG = 0
 
 # S T A R T  C L A S S twtapi
 
-class twtapi:
+class TwitterApi:
 
     def __init__(self,ckey,csec,atkey,atsec):
         self.ckey = ckey
