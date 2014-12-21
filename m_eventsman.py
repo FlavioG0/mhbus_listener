@@ -22,8 +22,6 @@
 # e-mail:flavio.giovannangeli@gmail.com
 
 
-#   M O D U L E S  & L I B R A R I E S #
-
 import pickle
 import time
 import os, sys
@@ -48,11 +46,9 @@ except ImportError:
     twt_module_available = False
 
 
-#   C O N S T A N T S  #
-
-DEBUG = 1
-# Configuration file name
-CFGFILENAME = 'mhblconf.xml'
+# Tunable parameters
+DEBUG = 1                     # Debug
+CFGFILENAME = 'mhblconf.xml'  # Configuration file name
 
 
 ########################
@@ -73,12 +69,16 @@ def ControlloEventi(msgOpen):
             # Recupero precedenti valori di temperatura memorizzati.
             # Se non disponibili e' prima volta. L'informazione della
             # temperatura viene inviata dalle sonde sul bus ogni 15 minuti.
-            # I valori di temp. vengono qui storicizzati e confrontati con
+            # L'ultimo valore di temp. viene storicizzato e confrontato con
             # la successiva lettura, questo perche' il trigger deve scattare
             # una sola volta finche' la condizione rimane VERA.
             ####################################################################
-            with open('tmpobjs.pickle') as f:
-                idso, tval = pickle.load(f)
+            try:
+                with open('tmpobjs.pickle') as f:
+                    idso, tval = pickle.load(f)
+            except EOFError:
+                # No data!
+                exit
             # Lettura sonde
             if trigger.split('*')[3] == '15':
                 ###############
@@ -88,6 +88,9 @@ def ControlloEventi(msgOpen):
                 nso = int(trigger.split('*')[2][0:1])
                 # Lettura temperatura
                 vt = fixtemp(trigger.split('*')[5][0:4])
+                # Storicizza dato
+                outtmpdata = [nso,vt]
+                pickle.dump(outtmpdata,f)
                 # Trigger
                 trigger = 'TSE' + str(nso)
             elif trigger.split('*')[3] == '0':
@@ -98,6 +101,9 @@ def ControlloEventi(msgOpen):
                 nzo = trigger.split('*')[2][0:1]
                 # Lettura temperatura
                 vt = fixtemp(trigger.split('*')[4][0:4])
+                # Storicizza dato
+                intmpdata = [nzo,vt]
+                pickle.dump(intmpdata,f)
                 # Trigger
                 trigger = 'TSZ' + str(nzo)
             else:

@@ -2,7 +2,6 @@
 
 # -------------------------------------------------------------------------------
 # Name:        mhbus_listener
-# Version:     1.7
 # Purpose:     Home automation system with bticino MyHome(R)
 #
 # Author:      Flavio Giovannangeli
@@ -30,8 +29,7 @@
 
 # Thanks to MyOpen Community (http://www.myopen-legrandgroup.com/) for support.
 
-
-#   M O D U L E S  & L I B R A R I E S #
+__version__ = '1.7'
 
 import re
 import time
@@ -42,21 +40,13 @@ from cl_log import Log
 from cl_btbus import MyHome
 
 
-#   C O N S T A N T S  #
-
-DEBUG = 1
-# Program version
-VER = '1.7'
-# Acknowledge (OPEN message OK)
-ACK = '*#*1##'
-# Not-Acknowledge (OPEN message KO)
-NACK = '*#*0##'
-# Monitor session
-MONITOR = '*99*1##'
-# Commands session
-COMMANDS = '*99*0##'
-# Configuration file name
-CFGFILENAME = 'mhblconf.xml'
+# Tunable parameters
+DEBUG = 1                     # Debug
+ACK = '*#*1##'                # Acknowledge (OPEN message OK)
+NACK = '*#*0##'               # Not-Acknowledge (OPEN message KO)
+MONITOR = '*99*1##'           # Monitor session
+COMMANDS = '*99*0##'          # Commands session
+CFGFILENAME = 'mhblconf.xml'  # Configuration file name
 
 
 # F U N C T I O N S #
@@ -88,7 +78,7 @@ def main():
         # ***********************************************************
         # ** CONNESSIONE AL GATEWAY                                **
         # ***********************************************************
-        logobj.write('mhbus_listener v.' + VER + ' started.')
+        logobj.write('mhbus_listener v.' + __version__ + ' started.')
         # Controllo presenza parametri necessari
         if mhgateway_ip and mhgateway_port and flog:
             # Instanziamento classe MyHome
@@ -172,6 +162,18 @@ def main():
         if DEBUG == 1:
             print 'Errore in f.main! [' + str(sys.stderr.write('ERROR: %s\n' % str(err))) + ']'
         logobj.write('Errore in f.main! [' + str(sys.stderr.write('ERROR: %s\n' % str(err))) + ']')
+
+
+def ExitApp():
+    try:
+        # Close socket.
+        smon.close
+    except:
+        # Exit
+        if not logobj.write('DISCONNESSO DAL GATEWAY. ARRIVEDERCI!'):
+            print 'DISCONNESSO DAL GATEWAY. ARRIVEDERCI!'
+        pushover_service('mhbus_listener ' + __version__ + ' closed!')
+        sys.exit()
 
 
 if __name__ == '__main__':
