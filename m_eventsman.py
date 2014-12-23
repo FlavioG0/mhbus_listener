@@ -22,12 +22,12 @@
 # e-mail:flavio.giovannangeli@gmail.com
 
 
-import pickle
 import time
 import os, sys
 import platform
 import ConfigParser
 import httplib, urllib
+import cPickle as pickle
 import json as simplejson
 import xml.etree.ElementTree as ET
 from cl_log import Log
@@ -73,39 +73,75 @@ def ControlloEventi(msgOpen):
             # la successiva lettura, questo perche' il trigger deve scattare
             # una sola volta finche' la condizione rimane VERA.
             ####################################################################
-            try:
-                with open('tmpobjs.pickle') as f:
-                    idso, tval = pickle.load(f)
-            except EOFError:
-                # No data!
-                exit
             # Lettura sonde
             if trigger.split('*')[3] == '15':
-                ###############
-                # Sonda esterna
-                ###############
+                #################
+                # Sonda esterna #
+                #################
                 # Numero sonda
                 nso = int(trigger.split('*')[2][0:1])
                 # Lettura temperatura
                 vt = fixtemp(trigger.split('*')[5][0:4])
-                # Storicizza dato
-                outtmpdata = [nso,vt]
-                pickle.dump(outtmpdata,f)
-                # Trigger
-                trigger = 'TSE' + str(nso)
+                # Lettura ultimi dati registrati
+                try:
+                    bmem = True
+                    tedt = []
+                    tedt = pickle.load(open("tempdata.p", "rb"))
+                except Exception:
+                    # Nessun dato, scrivi quello appena letto.
+                    bmem = False
+                    tedt.append(nso)
+                    tedt.append(vt)
+                    pickle.dump(tedt,open("tempdata.p", "wb"))
+                # Controlla se ultimo dato temp. storicizzato.
+                if bmem == True:
+                    # Presenza di ultimo dato storicizzato. Confronta.
+                    if nso == tedt[0] and vt == tedt[1]:
+                        # Valori invariati dalla precedente lettura, no trigger!
+                        exit
+                    else:
+                        if not(nso == tedt[0] and vt == tedt[1]):
+                            # OK trigger
+                            trigger = 'TSZ' + str(nzo)
+                            # Aggiorna valori!
+                            del tedt[:]
+                            tedt.append(nso)
+                            tedt.append(vt)
+                            pickle.dump(tedt,open("tempdata.p", "wb"))
             elif trigger.split('*')[3] == '0':
-                ###############
-                # Sonda interna
-                ###############
+                #################
+                # Sonda interna #
+                #################
                 # Numero zona
                 nzo = trigger.split('*')[2][0:1]
                 # Lettura temperatura
                 vt = fixtemp(trigger.split('*')[4][0:4])
-                # Storicizza dato
-                intmpdata = [nzo,vt]
-                pickle.dump(intmpdata,f)
-                # Trigger
-                trigger = 'TSZ' + str(nzo)
+                # Lettura ultimi dati registrati
+                try:
+                    bmem = True
+                    tidt = []
+                    tidt = pickle.load(open("tempdata.p", "rb"))
+                except Exception:
+                    # Nessun dato, scrivi quello appena letto.
+                    bmem = False
+                    tidt.append(nzo)
+                    tidt.append(vt)
+                    pickle.dump(tidt,open("tempdata.p", "wb"))
+                # Controlla se ultimo dato temp. storicizzato.
+                if bmem == True:
+                    # Presenza di ultimo dato storicizzato. Confronta.
+                    if nzo == tidt[0] and vt == tidt[1]:
+                        # Valori invariati dalla precedente lettura, no trigger!
+                        exit
+                    else:
+                        if not(nzo == tidt[0] and vt == tidt[1]):
+                            # OK trigger
+                            trigger = 'TSZ' + str(nzo)
+                            # Aggiorna valori!
+                            del tidt[:]
+                            tidt.append(nzo)
+                            tidt.append(vt)
+                            pickle.dump(tidt,open("tempdata.p", "wb"))
             else:
                 # Ignorare altre frame termoregolazione non gestite.
                 None
