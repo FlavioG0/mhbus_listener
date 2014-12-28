@@ -74,56 +74,78 @@ def ControlloEventi(msgOpen):
             # la successiva lettura, questo perche' il trigger deve scattare
             # una sola volta finche' la condizione rimane VERA.
             ####################################################################
-            # Lettura sonde
-            if trigger.split('*')[3] == '15':
-                #################
-                # Sonda esterna #
-                #################
-                # Numero sonda
-                nso = int(trigger.split('*')[2][0:1])
-                # Lettura temperatura
-                vt = fixtemp(trigger.split('*')[5][0:4])
-                # Lettura ultimi dati registrati
-                try:
-                    tedt = []
-                    tedt = pickle.load(open("tempdata.p", "rb"))
-                    # Presenza di ultimo dato storicizzato. Confronta.
-                    if nso == tedt[0] and vt == tedt[1]:
-                        # Valori invariati dalla precedente lettura, no trigger!
-                        exit
-                except Exception:
-                    # Nessun dato storicizzato, scrivi quello appena letto.
-                    tedt.append(nso)
-                    tedt.append(vt)
-                    pickle.dump(tedt,open("tempdata.p", "wb"))
-                    # OK trigger
-                    trigger = 'TSE' + str(nso)
-            elif trigger.split('*')[3] == '0':
-                #################
-                # Sonda interna #
-                #################
-                # Numero zona
-                nzo = trigger.split('*')[2][0:1]
-                # Lettura temperatura
-                vt = fixtemp(trigger.split('*')[4][0:4])
-                # Lettura ultimi dati registrati
-                try:
-                    tidt = []
-                    tidt = pickle.load(open("tempdata.p", "rb"))
-                    # Presenza di ultimo dato storicizzato. Confronta.
-                    if nzo == tidt[0] and vt == tidt[1]:
-                        # Valori invariati dalla precedente lettura, no trigger!
-                        exit
-                except Exception:
-                    # Nessun dato storicizzato, scrivi quello appena letto.
-                    tidt.append(nzo)
-                    tidt.append(vt)
-                    pickle.dump(tidt,open("tempdata.p", "wb"))
-                    # OK trigger
-                    trigger = 'TSZ' + str(nzo)
-            else:
-                # Ignorare altre frame termoregolazione non gestite.
-                None
+            try:
+                tempdict = pickle.load(open("tempdata", "rb"))
+                lastvalue = True
+            except Exception:
+                lastvalue = False
+                 # Inizializza dizionario temperature x zona
+                tempdict = {}
+                # Zone interne
+                tempdict['Z1'] = 0
+                tempdict['Z2'] = 0
+                tempdict['Z3'] = 0
+                tempdict['Z4'] = 0
+                tempdict['Z5'] = 0
+                tempdict['Z6'] = 0
+                tempdict['Z7'] = 0
+                tempdict['Z8'] = 0
+                tempdict['Z9'] = 0
+                tempdict['Z10'] = 0
+                # Sonde esterne radio
+                tempdict['SE1'] = 0
+                tempdict['SE2'] = 0
+                tempdict['SE3'] = 0
+            finally:
+                # Lettura sonde
+                if trigger.split('*')[3] == '15':
+                    #################
+                    # Sonda esterna #
+                    #################
+                    # Numero sonda
+                    nso = int(trigger.split('*')[2][0:1])
+                    # Lettura temperatura
+                    vt = fixtemp(trigger.split('*')[5][0:4])
+                    # Lettura ultimi dati registrati
+                    if lastvalue:
+                        # Presenza di valore precedente
+                        if vt == tempdict['SE'+str(nso)]:
+                            # Valori invariati dalla precedente lettura, no trigger!
+                            exit
+                        else:
+                            # Valori variati dalla precedente lettura, scrivi quelli appena letti e OK trigger.
+                            tempdict['SE'+str(nso)] = vt
+                            pickle.dump(tempdict,open("tempdata", "wb"))
+                            trigger = 'TSE' + str(nso)
+                    else:
+                        # Assenza valore precedente, scrivi quello appena letto e OK trigger.
+                        tempdict['SE'+str(nso)] = vt
+                        pickle.dump(tempdict,open("tempdata", "wb"))
+                        trigger = 'TSE' + str(nso)
+                elif trigger.split('*')[3] == '0':
+                    #################
+                    # Sonda interna #
+                    #################
+                    # Numero zona
+                    nzo = int(trigger.split('*')[2][0:1])
+                    # Lettura temperatura
+                    vt = fixtemp(trigger.split('*')[4][0:4])
+                     # Lettura ultimi dati registrati
+                    if lastvalue:
+                        # Presenza di valore precedente
+                        if vt == tempdict['Z'+str(nzo)]:
+                            # Valori invariati dalla precedente lettura, no trigger!
+                            exit
+                        else:
+                            # Valori variati dalla precedente lettura, scrivi quelli appena letti e OK trigger.
+                            tempdict['Z'+str(nzo)] = vt
+                            pickle.dump(tempdict,open("tempdata", "wb"))
+                            trigger = 'TSZ' + str(nzo)
+                    else:
+                        # Assenza valore precedente, scrivi quello appena letto e OK trigger.
+                        tempdict['Z'+str(nzo)] = vt
+                        pickle.dump(tempdict,open("tempdata", "wb"))
+                        trigger = 'TSZ' + str(nzo)
         # Cerca trigger evento legato alla frame open ricevuta.
         for elem in ET.parse(CFGFILENAME).iterfind("alerts/alert[@trigger='" + trigger + "']"):
             # Estrai canale
@@ -131,8 +153,8 @@ def ControlloEventi(msgOpen):
             # Se trigger di temperatura estrai parametri e verificali
             if trigger.startswith('TS'):
                 tempdta = elem.attrib['data'].split('|')
-                tempopt = tempdta[3]
-                tempval = float(tempdta[4])
+                tempopt = tempdta[2]
+                tempval = float(tempdta[3])
                 if tempopt == 'EQ':
                     # EQUAL
                     if not vt == tempval:
