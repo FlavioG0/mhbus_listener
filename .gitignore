@@ -1,2 +1,6 @@
 mhblconf.xml
 mhlog_191214.txt
+*.pyc
+*.txt
+tempdata.p
+dist/mhbus_listener-1.7.zip

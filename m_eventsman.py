@@ -31,6 +31,7 @@ import cPickle as pickle
 import json as simplejson
 import xml.etree.ElementTree as ET
 from cl_log import Log
+from cl_btbus import MyHome
 from cl_email import EmailSender
 # Optionl module for GSM function.
 try:
@@ -84,30 +85,19 @@ def ControlloEventi(msgOpen):
                 vt = fixtemp(trigger.split('*')[5][0:4])
                 # Lettura ultimi dati registrati
                 try:
-                    bmem = True
                     tedt = []
                     tedt = pickle.load(open("tempdata.p", "rb"))
-                except Exception:
-                    # Nessun dato, scrivi quello appena letto.
-                    bmem = False
-                    tedt.append(nso)
-                    tedt.append(vt)
-                    pickle.dump(tedt,open("tempdata.p", "wb"))
-                # Controlla se ultimo dato temp. storicizzato.
-                if bmem == True:
                     # Presenza di ultimo dato storicizzato. Confronta.
                     if nso == tedt[0] and vt == tedt[1]:
                         # Valori invariati dalla precedente lettura, no trigger!
                         exit
-                    else:
-                        if not(nso == tedt[0] and vt == tedt[1]):
-                            # OK trigger
-                            trigger = 'TSZ' + str(nzo)
-                            # Aggiorna valori!
-                            del tedt[:]
-                            tedt.append(nso)
-                            tedt.append(vt)
-                            pickle.dump(tedt,open("tempdata.p", "wb"))
+                except Exception:
+                    # Nessun dato storicizzato, scrivi quello appena letto.
+                    tedt.append(nso)
+                    tedt.append(vt)
+                    pickle.dump(tedt,open("tempdata.p", "wb"))
+                    # OK trigger
+                    trigger = 'TSE' + str(nso)
             elif trigger.split('*')[3] == '0':
                 #################
                 # Sonda interna #
@@ -118,30 +108,19 @@ def ControlloEventi(msgOpen):
                 vt = fixtemp(trigger.split('*')[4][0:4])
                 # Lettura ultimi dati registrati
                 try:
-                    bmem = True
                     tidt = []
                     tidt = pickle.load(open("tempdata.p", "rb"))
-                except Exception:
-                    # Nessun dato, scrivi quello appena letto.
-                    bmem = False
-                    tidt.append(nzo)
-                    tidt.append(vt)
-                    pickle.dump(tidt,open("tempdata.p", "wb"))
-                # Controlla se ultimo dato temp. storicizzato.
-                if bmem == True:
                     # Presenza di ultimo dato storicizzato. Confronta.
                     if nzo == tidt[0] and vt == tidt[1]:
                         # Valori invariati dalla precedente lettura, no trigger!
                         exit
-                    else:
-                        if not(nzo == tidt[0] and vt == tidt[1]):
-                            # OK trigger
-                            trigger = 'TSZ' + str(nzo)
-                            # Aggiorna valori!
-                            del tidt[:]
-                            tidt.append(nzo)
-                            tidt.append(vt)
-                            pickle.dump(tidt,open("tempdata.p", "wb"))
+                except Exception:
+                    # Nessun dato storicizzato, scrivi quello appena letto.
+                    tidt.append(nzo)
+                    tidt.append(vt)
+                    pickle.dump(tidt,open("tempdata.p", "wb"))
+                    # OK trigger
+                    trigger = 'TSZ' + str(nzo)
             else:
                 # Ignorare altre frame termoregolazione non gestite.
                 None
@@ -303,7 +282,7 @@ def sms_service(nums,smstext):
     try:
         serport = ET.parse(CFGFILENAME).find("channels/channel[@type='SMS']").attrib['serport']
         serspeed = ET.parse(CFGFILENAME).find("channels/channel[@type='SMS']").attrib['serspeed']
-        gsmobj = gsmdevice(serport,serspeed)
+        gsmobj = GsmDevice(serport,serspeed)
         numdest = nums.split(';')
         i = 0
         while i < len(numdest):
@@ -370,7 +349,7 @@ def email_service(emldest,emlobj,emltext):
         smtppsw = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['smtp_psw']
         smtptls = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['smtp_tls_sec']
         sender = ET.parse(CFGFILENAME).find("channels/channel[@type='EML']").attrib['sender']
-        mailobj = emailsender(smtpsrv,smtpport,smtpauth,smtpuser,smtppsw,smtptls,sender)
+        mailobj = EmailSender(smtpsrv,smtpport,smtpauth,smtpuser,smtppsw,smtptls,sender)
         if not mailobj.send_email(emldest,emlobj,emltext) == True:
             bOK = False
     except Exception, err:
@@ -386,7 +365,7 @@ def opencmd_service(opencmd):
         mhgateway_ip = ET.parse(CFGFILENAME).find("gateways/gateway[@priority='1']").attrib['address']
         mhgateway_port = ET.parse(CFGFILENAME).find("gateways/gateway[@priority='1']").attrib['port']
         # Instanziamento classe MyHome
-        mhobj = myhome(mhgateway_ip,mhgateway_port)
+        mhobj = MyHome(mhgateway_ip,mhgateway_port)
         # Connessione all'impianto MyHome...
         scmd = mhobj.mh_connect()
         mhcmd  = opencmd.split(';')
