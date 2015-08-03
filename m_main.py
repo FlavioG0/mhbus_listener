@@ -8,7 +8,7 @@
 # e-mail:      flavio.giovannangeli@gmail.com
 #
 # Created:     15/10/2013
-# Updated:     25/11/2014
+# Updated:     03/08/2015
 # Licence:     GPLv3
 # -------------------------------------------------------------------------------
 

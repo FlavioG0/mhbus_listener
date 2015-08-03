@@ -64,119 +64,10 @@ def ControlloEventi(msgOpen):
         flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
         logtype = ET.parse(CFGFILENAME).find("log[@file]").attrib['type']
         logobj = Log(flog,logtype)
-        # Se CHI=4 estrazione dati di temperatura.
-        if trigger.startswith('*#4*'):
-            ####################################################################
-            # Recupero precedenti valori di temperatura memorizzati.
-            # Se non disponibili e' prima volta. L'informazione della
-            # temperatura viene inviata dalle sonde sul bus ogni 15 minuti.
-            # L'ultimo valore di temp. viene storicizzato e confrontato con
-            # la successiva lettura, questo perche' il trigger deve scattare
-            # una sola volta finche' la condizione rimane VERA.
-            ####################################################################
-            try:
-                tempdict = pickle.load(open("tempdata", "rb"))
-                lastvalue = True
-            except Exception:
-                lastvalue = False
-                 # Inizializza dizionario temperature x zona
-                tempdict = {}
-                # Zone interne
-                tempdict['Z1'] = 0
-                tempdict['Z2'] = 0
-                tempdict['Z3'] = 0
-                tempdict['Z4'] = 0
-                tempdict['Z5'] = 0
-                tempdict['Z6'] = 0
-                tempdict['Z7'] = 0
-                tempdict['Z8'] = 0
-                tempdict['Z9'] = 0
-                tempdict['Z10'] = 0
-                # Sonde esterne radio
-                tempdict['SE1'] = 0
-                tempdict['SE2'] = 0
-                tempdict['SE3'] = 0
-            finally:
-                # Lettura sonde
-                if trigger.split('*')[3] == '15':
-                    #################
-                    # Sonda esterna #
-                    #################
-                    # Numero sonda
-                    nso = int(trigger.split('*')[2][0:1])
-                    # Lettura temperatura
-                    vt = fixtemp(trigger.split('*')[5][0:4])
-                    # Lettura ultimi dati registrati
-                    if lastvalue:
-                        # Presenza di valore precedente
-                        if vt == tempdict['SE'+str(nso)]:
-                            # Valori invariati dalla precedente lettura, no trigger!
-                            exit
-                        else:
-                            # Valori variati dalla precedente lettura, scrivi quelli appena letti e OK trigger.
-                            tempdict['SE'+str(nso)] = vt
-                            pickle.dump(tempdict,open("tempdata", "wb"))
-                            trigger = 'TSE' + str(nso)
-                    else:
-                        # Assenza valore precedente, scrivi quello appena letto e OK trigger.
-                        tempdict['SE'+str(nso)] = vt
-                        pickle.dump(tempdict,open("tempdata", "wb"))
-                        trigger = 'TSE' + str(nso)
-                elif trigger.split('*')[3] == '0':
-                    #################
-                    # Sonda interna #
-                    #################
-                    # Numero zona
-                    nzo = int(trigger.split('*')[2][0:1])
-                    # Lettura temperatura
-                    vt = fixtemp(trigger.split('*')[4][0:4])
-                     # Lettura ultimi dati registrati
-                    if lastvalue:
-                        # Presenza di valore precedente
-                        if vt == tempdict['Z'+str(nzo)]:
-                            # Valori invariati dalla precedente lettura, no trigger!
-                            exit
-                        else:
-                            # Valori variati dalla precedente lettura, scrivi quelli appena letti e OK trigger.
-                            tempdict['Z'+str(nzo)] = vt
-                            pickle.dump(tempdict,open("tempdata", "wb"))
-                            trigger = 'TSZ' + str(nzo)
-                    else:
-                        # Assenza valore precedente, scrivi quello appena letto e OK trigger.
-                        tempdict['Z'+str(nzo)] = vt
-                        pickle.dump(tempdict,open("tempdata", "wb"))
-                        trigger = 'TSZ' + str(nzo)
         # Cerca trigger evento legato alla frame open ricevuta.
         for elem in ET.parse(CFGFILENAME).iterfind("alerts/alert[@trigger='" + trigger + "']"):
             # Estrai canale
             channel = elem.attrib['channel']
-            # Se trigger di temperatura estrai parametri e verificali
-            if trigger.startswith('TS'):
-                tempdta = elem.attrib['data'].split('|')
-                tempopt = tempdta[2]
-                tempval = float(tempdta[3])
-                if tempopt == 'EQ':
-                    # EQUAL
-                    if not vt == tempval:
-                        break
-                elif tempopt == 'LS':
-                    # LESS THAN
-                    if not vt < tempval:
-                        break
-                elif tempopt == 'LE':
-                    # LESS OR EQUAL
-                    if not vt <= tempval:
-                        break
-                elif tempopt == 'GR':
-                    # GREATER THAN
-                    if not vt > tempval:
-                        break
-                elif tempopt == 'GE':
-                    # GREATER OR EQUAL
-                    if not vt >= tempval:
-                        break
-                # Lettura canale
-                channel = elem.attrib['channel']
             # Controlla stato del canale
             status = ET.parse(CFGFILENAME).find("channels/channel[@type='" + channel + "']").attrib['enabled']
             if status == "Y":
@@ -193,7 +84,7 @@ def ControlloEventi(msgOpen):
                         logobj.write('Errore invio messaggio pushover a seguito di evento ' + trigger)
                 elif channel == 'SMS':
                     # ***********************************************************
-                    # ** SMS channel (a GSM phone is required on RS-232)       **
+                    # ** SMS channel (a GSM module is required throught RS-232)**
                     # ***********************************************************
                     smsdata = data.split('|')
                     if sms_service(smsdata[0],smsdata[1]) == True:
