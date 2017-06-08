@@ -9,3 +9,6 @@ V.1.6 - October 2014
 
 V.1.7 - August 2015
 * Remove temperature trigger;
+
+V.1.71 - June 2017
+* Lihìght version with only Pushover and e-mail notifications.
