@@ -23,7 +23,7 @@ from email import Encoders
 
 # S T A R T  C L A S S  'emailsender'
 
-class emailsender:
+class EmailSender:
 
     DEBUG = 0
 

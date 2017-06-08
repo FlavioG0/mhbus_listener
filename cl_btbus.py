@@ -27,7 +27,7 @@ import socket
 
 # S T A R T  C L A S S  M Y H O M E
 
-class myhome:
+class MyHome:
 
     DEBUG = 0
 
