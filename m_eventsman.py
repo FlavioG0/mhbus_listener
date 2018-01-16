@@ -33,7 +33,8 @@ import xml.etree.ElementTree as ET
 from cl_log import Log
 from cl_btbus import MyHome
 from cl_email import EmailSender
-# Optionl module for GSM function.
+
+# Optional module for GSM function.
 try:
     from cl_gsmat import GsmDevice
     gsm_module_available = True
