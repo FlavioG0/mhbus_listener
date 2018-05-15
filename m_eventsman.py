@@ -169,11 +169,13 @@ def opencmd_service(opencmd):
         return bOK
 
 
-def batch_service(batcmd):
+def batch_service(batchdata):
     bOK = True
     try:
-        # Esecuzione del comando batch shell
-        
+        import subprocess
+        esito = subprocess.call(['.' + batchdata])
+        if esito != 0:
+            bOK = False
     except:
         bOK = False
     finally:
