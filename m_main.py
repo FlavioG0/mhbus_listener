@@ -8,7 +8,7 @@
 # e-mail:      flavio.giovannangeli@gmail.com
 #
 # Created:     15/10/2013
-# Updated:     08/05/2017
+# Updated:     15/05/2018
 # Licence:     GPLv3
 # -------------------------------------------------------------------------------
 
@@ -91,42 +91,42 @@ def main():
                     while smon:
                         # Lettura dati in arrivo dal bus
                         frames = mhobj.mh_receive_data(smon)
-                        if frames != '':
-                            # Controllo prima di tutto che la frame open sia nel formato corretto (*...##)
-                            if frames.startswith('*') and frames.endswith('##'):
-                                # OK, controllo se si tratta di ACK o NACK, che vengono ignorati.
-                                if not (frames == ACK or frames == NACK):
-                                    # Separazione frame (nel caso ne arrivino piu' di uno)
-                                    frames = frames.split('##')
-                                    for frame in frames:
-                                        if frame:
-                                            # Viene reinserito il terminatore open
-                                            msgopen = frame + '##'
-                                            if DEBUG == 1:
-                                                print 'Frame open in transito:' + msgopen
-                                            # Extract WHO and write log
-                                            who = mhobj.mh_get_who(msgopen)
-                                            if DEBUG == 1:
-                                                print 'CHI rilevato:' + str(who)
-                                            # Se il 'CHI' non e' tra quelli da filtrare, scrivi il log
-                                            # e gestisci eventuale azione da compiere.
-                                            if who not in iwhofilter:
-                                                # Scrivi log
-                                                logobj.write(msgopen)
-                                                # Gestione voci antifurto
-                                                if who == 5 and msgopen != '*5*3*##':
-                                                    if msgopen not in afframes:
-                                                        afframes.append(msgopen)
-                                                    else:
-                                                        continue
-                                                    if msgopen == '*5*5*##' or msgopen == '*5*4*##':
-                                                        # Reset lista af
-                                                        afframes = []
-                                                # Controllo eventi...
-                                                evman.ctrl_eventi(msgopen)
-                            else:
-                                # Frame non riconosciuta!
-                                logobj.write(frames + ' [STRINGA OPENWEBNET NON RICONOSCIUTA!]')
+
+                        # Controllo prima di tutto che la frame open sia nel formato corretto (*...##)
+                        if frames.startswith('*') and frames.endswith('##'):
+                            # OK, controllo se si tratta di ACK o NACK, che vengono ignorati.
+                            if not (frames == ACK or frames == NACK):
+                                # Separazione frame (nel caso ne arrivino piu' di uno)
+                                frames = frames.split('##')
+                                for frame in frames:
+                                    if frame:
+                                        # Viene reinserito il terminatore open
+                                        msgopen = frame + '##'
+                                        if DEBUG == 1:
+                                            print 'Frame open in transito:' + msgopen
+                                        # Extract WHO and write log
+                                        who = mhobj.mh_get_who(msgopen)
+                                        if DEBUG == 1:
+                                            print 'CHI rilevato:' + str(who)
+                                        # Se il 'CHI' non e' tra quelli da filtrare, scrivi il log
+                                        # e gestisci eventuale azione da compiere.
+                                        if who not in iwhofilter:
+                                            # Scrivi log
+                                            logobj.write(msgopen)
+                                            # Gestione voci antifurto
+                                            if who == 5 and msgopen != '*5*3*##':
+                                                if msgopen not in afframes:
+                                                    afframes.append(msgopen)
+                                                else:
+                                                    continue
+                                                if msgopen == '*5*5*##' or msgopen == '*5*4*##':
+                                                    # Reset lista af
+                                                    afframes = []
+                                            # Controllo eventi...
+                                            evman.ctrl_eventi(msgopen)
+                        else:
+                            # Frame non riconosciuta!
+                            logobj.write(frames + ' [STRINGA OPENWEBNET NON RICONOSCIUTA!]')
                 else:
                     # KO, non e' stato possibile attivare la modalita' MONITOR, impossibile proseguire.
                     logobj.write('IL GATEWAY ' + mhgateway_ip + \

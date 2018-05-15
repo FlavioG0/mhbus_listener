@@ -79,6 +79,15 @@ def ctrl_eventi(trigger):
                     logobj.write('Eseguito/i comando/i OPEN preimpostato/i a seguito di evento ' + trigger)
                 else:
                     logobj.write('Errore esecuzione comando/i OPEN preimpostato/i a seguito di evento ' + trigger)
+            elif channel == 'BAT':
+                # ***********************************************************
+                # ** BATCH channel                                       **
+                # ***********************************************************
+                batdata = data.split('|')
+                if batch_service(batdata[0]) is True:
+                    logobj.write('Eseguito/i comando/i BATCH a seguito di evento ' + trigger)
+                else:
+                    logobj.write('Errore esecuzione comando/i BATCH a seguito di evento ' + trigger)
             else:
                 # Error
                 logobj.write('Canale di notifica non riconosciuto! [' + channel + ']')
@@ -154,6 +163,17 @@ def opencmd_service(opencmd):
                 bOK = False
         else:
             bOK = False
+    except:
+        bOK = False
+    finally:
+        return bOK
+
+
+def batch_service(batcmd):
+    bOK = True
+    try:
+        # Esecuzione del comando batch shell
+        
     except:
         bOK = False
     finally:
