@@ -1,37 +1,36 @@
 ﻿<?xml version="1.0"?>
 <mhbl>
-	<log file="/home/flavio/github/mhbus_listener/mhlog" type="M" who_filter="13" who_translate="Y" who_lang="ITA"/>
+	<log file="/home/pi/domotica/mhbus_listener/log/mhlog" type="D" who_filter="13" who_translate="N" who_lang="ITA"/>
 	<gateways>
 		<gateway gwID="1" priority="1" descr="MH200N" address="192.168.67.102" port="20000"/>
 		<gateway gwID="2" priority="2" descr="TS35" address="192.168.67.103" port="20000"/>
 	</gateways>
 	<channels>
-	    	<channel type="EML" descr="e-mail" enabled="Y" sender="mhraspi@gmail.com" smtp="smtp.gmail.com" smtp_user="mhraspi" smtp_psw="mhflavio67" smtp_port="25" smtp_auth="Y" smtp_tls_sec="Y"/>
+	    	<channel type="EML" descr="e-mail" enabled="Y" sender="dariano67.myhome@gmail.com" smtp="smtp.gmail.com" smtp_user="dariano67.myhome" smtp_psw="SysDomotic0" smtp_port="25" smtp_auth="Y" smtp_tls_sec="Y"/>
 			<channel type="POV" descr="Pushover" enabled="Y" api_token="aidDvf6kSxcAvd4im4rkx8y8kT9dex" user_key="uTr1vsTiphNFCH1qvi8q7PPTeCpR1X" address="api.pushover.net:443"/>
-			<channel type="BUS" descr="Bus SCS" enabled="N" gateway="1"/>
+			<channel type="BUS" descr="SCS" enabled="N" gateway="1"/>
+			<channel type="BAT" descr="Batch" enabled="N" batpath="/home/flavio/domotica/batch/"/>
 	</channels>
 	<alerts>
-		<alert trigger="*5*15*#1##" channel="POV" data="ND|Antifurto Z1:ALLARME INTRUSIONE PORTA BLINDATA!"/>
-		<alert trigger="*5*15*#2##" channel="POV" data="ND|Antifurto Z2:ALLARME INTRUSIONE PERIMETRO!"/>
-		<alert trigger="*5*15*#3##" channel="POV" data="ND|Antifurto Z3:ALLARME INTRUSIONE TAPPARELLA MATRIMONIALE!"/>
-		<alert trigger="*5*15*#4##" channel="POV" data="ND|Antifurto Z4:ALLARME INTRUSIONE FINESTRA MATRIMONIALE!"/>
-		<alert trigger="*5*16*#1##" channel="POV" data="ND|Antifurto Z1:ALLARME MANOMISSIONE PORTA BLINDATA!"/>
-		<alert trigger="*5*16*#2##" channel="POV" data="ND|Antifurto Z2:ALLARME MANOMISSIONE PERIMETRO!"/>
-		<alert trigger="*5*16*#3##" channel="POV" data="ND|Antifurto Z3:ALLARME MANOMISSIONE TAPP. MATRIMONIALE!"/>
-		<alert trigger="*5*16*#4##" channel="POV" data="ND|Antifurto Z4:ALLARME MANOMISSIONE FIN. MATRIMONIALE!"/>
-		<alert trigger="*5*18*#1##" channel="POV" data="ND|Antifurto:Z1 parzializzata!"/>
-		<alert trigger="*5*18*#2##" channel="POV" data="ND|Antifurto:Z2 parzializzata!"/>
-		<alert trigger="*5*18*#3##" channel="POV" data="ND|Antifurto:Z3 parzializzata!"/>
-		<alert trigger="*5*18*#4##" channel="POV" data="ND|Antifurto:Z4 parzializzata!"/>
-		<alert trigger="*5*10*##" channel="EML" data="flavio.giovannangeli@gmail.com|Batteria tampone antifurto da sostituire!"/>
-		<alert trigger="*5*4*##" channel="EML" data="flavio.giovannangeli@gmail.com|Batteria tampone antifurto da sostituire!"/>
+		<alert trigger="*5*15*#1##" channel="POV" data="ND|Z1 (porta blindata) in ALLARME INTRUSIONE!"/>
+		<alert trigger="*5*15*#2##" channel="POV" data="ND|Z2 (perimetro ZG) in ALLARME INTRUSIONE!"/>
+		<alert trigger="*5*15*#3##" channel="POV" data="ND|Z3 (fin. matrimoniale) in ALLARME INTRUSIONE!"/>
+		<alert trigger="*5*15*#4##" channel="POV" data="ND|Z4 (tapp. matrimoniale) in ALLARME INTRUSIONE!"/>
+		<alert trigger="*5*16*#1##" channel="POV" data="ND|Z1 (porta blindata) in ALLARME MANOMISSIONE!"/>
+		<alert trigger="*5*16*#2##" channel="POV" data="ND|Z2 (perimetro ZG) in ALLARME MANOMISSIONE!"/>
+		<alert trigger="*5*16*#3##" channel="POV" data="ND|Z3 (fin. matrimoniale) in ALLARME MANOMISSIONE!"/>
+		<alert trigger="*5*16*#4##" channel="POV" data="ND|Z4 (tapp. matrimoniale) in ALLARME MANOMISSIONE!"/>
+		<alert trigger="*5*10*##" channel="EML" data="flavio.giovannangeli@gmail.com|La batteria tampone dell'antifurto e' da sostituire!"/>
+		<alert trigger="*5*4*##" channel="EML" data="flavio.giovannangeli@gmail.com|La batteria tampone dell'antifurto e' da sostituire!"/>
 		<alert trigger="*5*9*0##" channel="POV" data="ND|Antifurto disattivato!"/>
-		<alert trigger="*5*6*##" channel="POV" data="ND|Tensione di rete assente!"/>
-		<alert trigger="*5*7*##" channel="POV" data="ND|Tensione di rete presente."/>
-		<alert trigger="*1*1*28##" channel="POV" data="ND|Wi-Fi ON"/>
-		<alert trigger="*1*0*28##" channel="POV" data="ND|Wi-Fi OFF"/>
-		<alert trigger="*1*1*18##" channel="POV" data="ND|Autoclave ON"/>
-		<alert trigger="*1*0*18##" channel="POV" data="ND|Autoclave OFF"/>
-		<alert trigger="*1*1*25##" channel="POV" data="ND|Test invio POV."/>
+		<alert trigger="*5*6*##" channel="POV" data="ND|ENEL KO!"/>
+		<alert trigger="*5*7*##" channel="POV" data="ND|ENEL OK"/>
+		<alert trigger="*9*1*1##" channel="POV" data="ND|Frigorifero KO!"/>
+		<alert trigger="*9*0*1##" channel="POV" data="ND|Frigorifero OK"/>
+		<alert trigger="*9*1*2##" channel="POV" data="ND|UPS KO!"/>
+		<alert trigger="*9*0*2##" channel="POV" data="ND|UPS OK"/>
+		<alert trigger="*1*1*56##" channel="POV" data="ND|Sto annaffiando le piante..."/>
+		<alert trigger="*1*0*56##" channel="POV" data="ND|Ho finito di annaffiare le piante."/>
+		<alert trigger="*1*1*25##" channel="POV" data="ND|TEST OK"/>
 	</alerts>
 </mhbl>

@@ -7,8 +7,8 @@
 # Author:      Flavio Giovannangeli
 # e-mail:      flavio.giovannangeli@gmail.com
 #
-# Created:     15/10/2013
-# Updated:     15/05/2018
+# Created:     10/2013
+# Updated:     5/2018
 # Licence:     GPLv3
 # -------------------------------------------------------------------------------
 
@@ -27,7 +27,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Thanks to MyOpen Community (http://www.myopen-legrandgroup.com/) for support.
+# Thanks to MyOPEN Community (http://www.myopen-legrandgroup.com/) for support.
 
 import m_eventsman as evman
 import xml.etree.ElementTree as ET
@@ -37,7 +37,7 @@ from cl_btbus import MyHome
 __version__ = '1.71'
 
 # Tunable parameters
-DEBUG = 1                     # Debug
+DEBUG = 0                     # Debug
 ACK = '*#*1##'                # Acknowledge (OPEN message OK)
 NACK = '*#*0##'               # Not-Acknowledge (OPEN message KO)
 MONITOR = '*99*1##'           # Monitor session
@@ -48,9 +48,8 @@ CFGFILENAME = 'mhblconf.xml'  # Configuration file name
 # F U N C T I O N S #
 
 def main():
-    # MAIN
     # ***********************************************************
-    # ** LETTURA PARAMETRI NECESSARI DA FILE DI CONFIGURAZIONE **
+    # ** LETTURA PARAMETRI DAL FILE DI CONFIGURAZIONE          **
     # ***********************************************************
     # Lettura percorso e nome del file di log
     flog = ET.parse(CFGFILENAME).find("log[@file]").attrib['file']
@@ -65,7 +64,7 @@ def main():
     # Lettura dei 'CHI' da filtrare.
     iwhofilter = map(int, ET.parse(CFGFILENAME).find("log[@file]").attrib['who_filter'].split(','))
     # ***********************************************************
-    # ** CONNESSIONE AL GATEWAY                                **
+    # ** CONNESSIONE AL GATEWAY BTICINO                        **
     # ***********************************************************
     logobj.write('mhbus_listener v.' + __version__ + ' started.')
     # Controllo presenza parametri necessari
@@ -85,13 +84,12 @@ def main():
                     # Modalita' MONITOR attivata.
                     logobj.write('OK, Ready!')
                     # ***********************************************************
-                    # ** ASCOLTO BUS...                                        **
+                    # ** ASCOLTO BUS SCS                                       **
                     # ***********************************************************
                     afframes = []
                     while smon:
                         # Lettura dati in arrivo dal bus
                         frames = mhobj.mh_receive_data(smon)
-
                         # Controllo prima di tutto che la frame open sia nel formato corretto (*...##)
                         if frames.startswith('*') and frames.endswith('##'):
                             # OK, controllo se si tratta di ACK o NACK, che vengono ignorati.
@@ -113,7 +111,7 @@ def main():
                                         if who not in iwhofilter:
                                             # Scrivi log
                                             logobj.write(msgopen)
-                                            # Gestione voci antifurto
+                                            # Gestione voci antifurto (evita frame duplicate)
                                             if who == 5 and msgopen != '*5*3*##':
                                                 if msgopen not in afframes:
                                                     afframes.append(msgopen)

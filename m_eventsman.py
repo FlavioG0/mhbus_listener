@@ -55,6 +55,7 @@ def ctrl_eventi(trigger):
             if channel == 'POV':
                 # ***********************************************************
                 # ** Pushover channel                                      **
+				# ** Invia um messaggio PUSH tramite il servizio Pushover  **
                 # ***********************************************************
                 povdata = data.split('|')
                 if pushover_service(povdata[1]) is True:
@@ -63,7 +64,8 @@ def ctrl_eventi(trigger):
                     logobj.write('Errore invio messaggio pushover a seguito di evento ' + trigger)
             elif channel == 'EML':
                 # ***********************************************************
-                # ** e-mail channel                                        **
+                # ** E-mail channel                                        **
+				# ** Invia un messaggio e-mail                             **
                 # ***********************************************************
                 emldata = data.split('|')
                 if email_service(emldata[0], 'mhbus_listener alert', emldata[1]) is True:
@@ -73,18 +75,20 @@ def ctrl_eventi(trigger):
             elif channel == 'BUS':
                 # ***********************************************************
                 # ** SCS-BUS channel                                       **
+				# ** Invia un comando sul BUS                              **
                 # ***********************************************************
                 busdata = data.split('|')
-                if opencmd_service(busdata[0]) is True:
+                if opencmd_service(busdata[1]) is True:
                     logobj.write('Eseguito/i comando/i OPEN preimpostato/i a seguito di evento ' + trigger)
                 else:
                     logobj.write('Errore esecuzione comando/i OPEN preimpostato/i a seguito di evento ' + trigger)
             elif channel == 'BAT':
                 # ***********************************************************
-                # ** BATCH channel                                       **
+                # ** BATCH channel                                         **
+				# ** Esegue un comando shell script                        **
                 # ***********************************************************
                 batdata = data.split('|')
-                if batch_service(batdata[0]) is True:
+                if batch_service(batdata[1]) is True:
                     logobj.write('Eseguito/i comando/i BATCH a seguito di evento ' + trigger)
                 else:
                     logobj.write('Errore esecuzione comando/i BATCH a seguito di evento ' + trigger)
@@ -169,11 +173,14 @@ def opencmd_service(opencmd):
         return bOK
 
 
-def batch_service(batchdata):
+def batch_service(scriptname):
     bOK = True
     try:
         import subprocess
-        esito = subprocess.call(['.' + batchdata])
+        batpath = ET.parse(CFGFILENAME).find("channels/channel[@type='BAT']").attrib['batpath']
+        if DEBUG == 1:
+            print 'shell command:' + str(batpath + scriptname)
+        esito = subprocess.call([batpath + scriptname])
         if esito != 0:
             bOK = False
     except:
