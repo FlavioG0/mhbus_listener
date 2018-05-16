@@ -11,4 +11,5 @@ V.1.7 - August 2015
 * Remove temperature trigger;
 
 V.1.71 - June 2017
-* Lihìght version with only Pushover and e-mail notifications.
+* Pushover, e-mail, SCS command and shell script for notifications;
+* Some problems fixed.
